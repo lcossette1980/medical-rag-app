@@ -1,0 +1,13 @@
+streamlit
+requests
+openai
+langchain==0.1.1
+langchain-community==0.0.13
+langchain-openai
+faiss-cpu
+sentence-transformers
+pymupdf
+tiktoken
+numpy<2.0.0
+pandas
+python-dotenv
