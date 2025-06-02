@@ -5,14 +5,13 @@ import time
 import json
 import requests
 from datetime import datetime
+import pickle
+import numpy as np
+from sklearn.metrics.pairwise import cosine_similarity
 warnings.filterwarnings("ignore")
 
 import tiktoken
 import pandas as pd
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.document_loaders import PyMuPDFLoader
-from langchain_community.embeddings.sentence_transformer import SentenceTransformerEmbeddings
-from langchain_community.vectorstores import Chroma
 
 st.set_page_config(
     page_title="MedAssist AI - Medical RAG Assistant",
@@ -21,7 +20,6 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Enhanced CSS for medical theme
 st.markdown("""
 <style>
     .main-header {
@@ -50,11 +48,6 @@ st.markdown("""
         background-color: #fef3c7;
         color: #92400e;
         border: 1px solid #fde68a;
-    }
-    .status-error {
-        background-color: #fee2e2;
-        color: #991b1b;
-        border: 1px solid #fecaca;
     }
     .user-message {
         background: #f1f5f9;
@@ -88,15 +81,13 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Header
 st.markdown("""
 <div class="main-header">
     <h1>🩺 MedAssist AI</h1>
-    <p>Advanced Medical Question Answering System powered by AI & Merck Manual</p>
+    <p>Advanced Medical Question Answering System powered by AI & Medical Knowledge</p>
 </div>
 """, unsafe_allow_html=True)
 
-# Initialize session state
 if "system_initialized" not in st.session_state:
     st.session_state.system_initialized = False
 if "messages" not in st.session_state:
@@ -106,22 +97,15 @@ if "query_count" not in st.session_state:
 if "session_start" not in st.session_state:
     st.session_state.session_start = datetime.now()
 
-# Cloud AI Client (supports multiple providers)
-class CloudAIClient:
-    def __init__(self):
-        self.provider = None
-        self.api_key = None
-        self.model = None
-    
-    def configure(self, provider, api_key, model):
-        self.provider = provider
+class OpenAIClient:
+    def __init__(self, api_key):
         self.api_key = api_key
-        self.model = model
     
     def is_configured(self):
-        return self.provider and self.api_key and self.model
+        return bool(self.api_key and self.api_key.startswith('sk-'))
     
-    def generate_openai(self, prompt, max_tokens=512):
+    def get_embeddings(self, texts):
+        """Get embeddings for texts using OpenAI"""
         try:
             headers = {
                 "Authorization": f"Bearer {self.api_key}",
@@ -129,7 +113,39 @@ class CloudAIClient:
             }
             
             data = {
-                "model": self.model,
+                "model": "text-embedding-ada-002",
+                "input": texts
+            }
+            
+            response = requests.post(
+                "https://api.openai.com/v1/embeddings",
+                headers=headers,
+                json=data,
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                embeddings = [item['embedding'] for item in response.json()['data']]
+                return np.array(embeddings)
+            else:
+                return None
+                
+        except Exception as e:
+            st.error(f"Embedding error: {e}")
+            return None
+    
+    def generate(self, prompt, model="gpt-3.5-turbo", max_tokens=512):
+        if not self.is_configured():
+            return "❌ OpenAI API key not configured"
+        
+        try:
+            headers = {
+                "Authorization": f"Bearer {self.api_key}",
+                "Content-Type": "application/json"
+            }
+            
+            data = {
+                "model": model,
                 "messages": [{"role": "user", "content": prompt}],
                 "max_tokens": max_tokens,
                 "temperature": 0
@@ -144,213 +160,167 @@ class CloudAIClient:
             
             if response.status_code == 200:
                 return response.json()["choices"][0]["message"]["content"].strip()
+            elif response.status_code == 401:
+                return "❌ Invalid API key. Please check your OpenAI API key."
+            elif response.status_code == 429:
+                return "❌ Rate limit exceeded. Please try again in a moment."
             else:
                 return f"❌ OpenAI API Error: {response.status_code}"
                 
         except Exception as e:
-            return f"❌ Error: {str(e)}"
-    
-    def generate_anthropic(self, prompt, max_tokens=512):
-        try:
-            headers = {
-                "x-api-key": self.api_key,
-                "Content-Type": "application/json",
-                "anthropic-version": "2023-06-01"
-            }
-            
-            data = {
-                "model": self.model,
-                "max_tokens": max_tokens,
-                "messages": [{"role": "user", "content": prompt}]
-            }
-            
-            response = requests.post(
-                "https://api.anthropic.com/v1/messages",
-                headers=headers,
-                json=data,
-                timeout=60
-            )
-            
-            if response.status_code == 200:
-                return response.json()["content"][0]["text"].strip()
-            else:
-                return f"❌ Anthropic API Error: {response.status_code}"
-                
-        except Exception as e:
-            return f"❌ Error: {str(e)}"
-    
-    def generate_ollama_cloud(self, prompt, max_tokens=512):
-        """For services like Replicate, Together AI, etc."""
-        try:
-            # Example for Replicate
-            headers = {
-                "Authorization": f"Token {self.api_key}",
-                "Content-Type": "application/json"
-            }
-            
-            data = {
-                "version": self.model,
-                "input": {
-                    "prompt": prompt,
-                    "max_length": max_tokens,
-                    "temperature": 0
-                }
-            }
-            
-            response = requests.post(
-                "https://api.replicate.com/v1/predictions",
-                headers=headers,
-                json=data,
-                timeout=60
-            )
-            
-            if response.status_code == 201:
-                # Handle Replicate's async response
-                prediction_url = response.json()["urls"]["get"]
-                
-                # Poll for completion
-                for _ in range(30):  # Wait up to 30 seconds
-                    time.sleep(1)
-                    result_response = requests.get(prediction_url, headers=headers)
-                    result = result_response.json()
-                    
-                    if result["status"] == "succeeded":
-                        return "".join(result["output"])
-                    elif result["status"] == "failed":
-                        return f"❌ Generation failed: {result.get('error', 'Unknown error')}"
-                
-                return "❌ Request timed out"
-            else:
-                return f"❌ API Error: {response.status_code}"
-                
-        except Exception as e:
-            return f"❌ Error: {str(e)}"
-    
-    def generate(self, prompt, max_tokens=512):
-        if not self.is_configured():
-            return "❌ AI provider not configured"
-        
-        if self.provider == "openai":
-            return self.generate_openai(prompt, max_tokens)
-        elif self.provider == "anthropic":
-            return self.generate_anthropic(prompt, max_tokens)
-        elif self.provider == "replicate":
-            return self.generate_ollama_cloud(prompt, max_tokens)
-        else:
-            return f"❌ Unsupported provider: {self.provider}"
+            return f"❌ Connection Error: {str(e)}"
 
-@st.cache_resource
-def setup_vectorstore():
-    """Setup the vector database"""
+class SimpleVectorStore:
+    def __init__(self):
+        self.documents = []
+        self.embeddings = None
+        
+    def add_documents(self, texts, embeddings):
+        self.documents = texts
+        self.embeddings = embeddings
+    
+    def similarity_search(self, query_embedding, k=3):
+        if self.embeddings is None:
+            return []
+        
+        # Calculate cosine similarity
+        similarities = cosine_similarity([query_embedding], self.embeddings)[0]
+        
+        # Get top k indices
+        top_indices = np.argsort(similarities)[::-1][:k]
+        
+        # Return top documents
+        return [self.documents[i] for i in top_indices]
+
+@st.cache_data
+def load_medical_knowledge():
+    """Load medical knowledge base"""
+    # Comprehensive medical knowledge base
+    medical_docs = [
+        "Myocardial infarction (heart attack) presents with chest pain, shortness of breath, nausea, sweating, and radiating pain to left arm or jaw. Immediate treatment includes aspirin, oxygen, nitroglycerin, and emergency cardiac catheterization. Risk factors include smoking, diabetes, hypertension, and family history.",
+        
+        "Type 2 diabetes mellitus is diagnosed with fasting glucose ≥126 mg/dL, HbA1c ≥6.5%, or random glucose ≥200 mg/dL with symptoms. Treatment includes lifestyle modifications, metformin as first-line medication, and progression to insulin if needed. Complications include nephropathy, retinopathy, and neuropathy.",
+        
+        "Pneumonia symptoms include fever, productive cough, chest pain, shortness of breath, and fatigue. Community-acquired pneumonia is typically treated with amoxicillin or macrolides. Hospital-acquired pneumonia requires broader spectrum antibiotics. Chest X-ray shows consolidation.",
+        
+        "Anaphylaxis is a severe allergic reaction requiring immediate epinephrine administration. Symptoms include difficulty breathing, swelling of face/throat, rapid pulse, dizziness, and full-body rash. Common triggers include foods (nuts, shellfish), medications (penicillin), and insect stings.",
+        
+        "Hypertension is defined as systolic BP ≥140 mmHg or diastolic BP ≥90 mmHg on repeated measurements. Treatment includes ACE inhibitors, ARBs, thiazide diuretics, and calcium channel blockers. Lifestyle modifications include salt restriction, weight loss, and exercise.",
+        
+        "Stroke symptoms follow FAST protocol: Face drooping, Arm weakness, Speech difficulty, Time to call emergency services. Ischemic stroke treatment includes tPA within 4.5 hours and thrombectomy within 24 hours. Hemorrhagic stroke requires blood pressure control and neurosurgical evaluation.",
+        
+        "Appendicitis presents with periumbilical pain migrating to right lower quadrant, nausea, vomiting, and fever. McBurney's point tenderness is classic. Treatment is appendectomy, either laparoscopic or open. Complications include perforation and abscess formation.",
+        
+        "Asthma exacerbation symptoms include wheezing, shortness of breath, chest tightness, and coughing. Treatment includes bronchodilators (albuterol), corticosteroids, and oxygen. Severe cases may require epinephrine and mechanical ventilation.",
+        
+        "Metformin is first-line treatment for type 2 diabetes. Contraindications include kidney disease (eGFR <30), liver disease, and conditions predisposing to lactic acidosis. Side effects include gastrointestinal upset and rare lactic acidosis. Dose adjustment needed in renal impairment.",
+        
+        "Sepsis is defined as life-threatening organ dysfunction due to dysregulated host response to infection. Early recognition and treatment within 1 hour improves outcomes. Treatment includes broad-spectrum antibiotics, fluid resuscitation, and vasopressors if needed.",
+        
+        "Heart failure symptoms include shortness of breath, fatigue, ankle swelling, and orthopnea. New York Heart Association (NYHA) classification grades functional capacity. Treatment includes ACE inhibitors, beta-blockers, diuretics, and lifestyle modifications.",
+        
+        "Chronic obstructive pulmonary disease (COPD) is characterized by airflow limitation due to smoking. Symptoms include chronic cough, sputum production, and dyspnea. Treatment includes bronchodilators, inhaled corticosteroids, and smoking cessation.",
+        
+        "Gastroesophageal reflux disease (GERD) presents with heartburn, regurgitation, and chest pain. Complications include Barrett's esophagus and adenocarcinoma. Treatment includes proton pump inhibitors, H2 blockers, and lifestyle modifications.",
+        
+        "Urinary tract infection (UTI) symptoms include dysuria, frequency, urgency, and suprapubic pain. Diagnosis requires urinalysis and culture. Treatment includes trimethoprim-sulfamethoxazole, nitrofurantoin, or fluoroquinolones.",
+        
+        "Migraine headaches are characterized by unilateral, throbbing pain with photophobia, phonophobia, and nausea. Triggers include stress, hormonal changes, and certain foods. Treatment includes triptans for acute episodes and preventive medications for frequent attacks."
+    ]
+    
+    return medical_docs
+
+def setup_knowledge_base(ai_client):
+    """Setup medical knowledge base with embeddings"""
     try:
         progress_bar = st.progress(0)
         status_text = st.empty()
         
-        status_text.text("📄 Loading medical documentation...")
+        status_text.text("📄 Loading medical knowledge...")
         progress_bar.progress(20)
         
-        manual_pdf_path = "medical_diagnosis_manual.pdf"
-        if not os.path.exists(manual_pdf_path):
-            st.error("❌ Medical manual PDF not found. Please add 'medical_diagnosis_manual.pdf' to the app directory.")
-            st.info("💡 For demo purposes, you can upload any medical PDF and rename it.")
-            st.stop()
+        # Load medical documents
+        medical_docs = load_medical_knowledge()
         
-        pdf_loader = PyMuPDFLoader(manual_pdf_path)
-        progress_bar.progress(40)
+        status_text.text("🧮 Creating embeddings...")
+        progress_bar.progress(50)
         
-        status_text.text("✂️ Processing medical content...")
-        text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
-            encoding_name='cl100k_base',
-            chunk_size=1000,
-            chunk_overlap=100
-        )
+        # Get embeddings from OpenAI
+        embeddings = ai_client.get_embeddings(medical_docs)
         
-        document_chunks = pdf_loader.load_and_split(text_splitter)
-        progress_bar.progress(60)
+        if embeddings is None:
+            st.error("Failed to create embeddings. Please check your API key.")
+            return None
         
-        status_text.text("🧮 Creating medical embeddings...")
-        embedding_model = SentenceTransformerEmbeddings(model_name="all-MiniLM-L6-v2")
         progress_bar.progress(80)
+        status_text.text("🗄️ Building vector store...")
         
-        status_text.text("🗄️ Building knowledge base...")
-        out_dir = 'medical_db'
-        if not os.path.exists(out_dir):
-            os.makedirs(out_dir)
-        
-        vectorstore = Chroma.from_documents(
-            document_chunks,
-            embedding_model,
-            persist_directory=out_dir
-        )
-        
-        retriever = vectorstore.as_retriever(
-            search_type='similarity',
-            search_kwargs={'k': 3}
-        )
+        # Create simple vector store
+        vector_store = SimpleVectorStore()
+        vector_store.add_documents(medical_docs, embeddings)
         
         progress_bar.progress(100)
         status_text.text("✅ Medical knowledge base ready!")
+        
+        # Store stats
+        st.session_state.total_chunks = len(medical_docs)
+        st.session_state.total_sources = "15 medical topics"
         
         time.sleep(1)
         progress_bar.empty()
         status_text.empty()
         
-        # Store document stats
-        st.session_state.total_chunks = len(document_chunks)
-        st.session_state.total_pages = len(pdf_loader.load())
-        
-        return retriever
+        return vector_store
         
     except Exception as e:
         st.error(f"❌ Failed to setup knowledge base: {str(e)}")
         return None
 
-def count_tokens(text):
-    enc = tiktoken.get_encoding("cl100k_base")
-    return len(enc.encode(text))
-
-def generate_rag_response(ai_client, retriever, user_input, max_tokens=512):
-    """Generate RAG response using cloud AI"""
-    system_message = """You are MedAssist AI, a medical assistant with access to the Merck Manual.
+def generate_rag_response(ai_client, vector_store, user_input, model="gpt-3.5-turbo", max_tokens=512):
+    """Generate RAG response using simple vector search"""
+    system_message = """You are MedAssist AI, a medical assistant with access to medical knowledge.
 
 GUIDELINES:
-- Answer based ONLY on the provided medical context from the Merck Manual
+- Answer based ONLY on the provided medical context
 - Structure responses clearly with relevant medical sections
-- Use appropriate medical terminology while remaining accessible to healthcare professionals
+- Use appropriate medical terminology while remaining accessible
 - If the context lacks specific information, acknowledge this limitation clearly
 - For treatment questions, present options systematically
-- Always emphasize consulting with healthcare professionals for diagnosis and treatment decisions
+- Always emphasize consulting with healthcare professionals
 
 RESPONSE FORMAT:
 - Use clear headings when appropriate (## Symptoms, ## Diagnosis, ## Treatment)
 - Use bullet points for lists of symptoms, treatments, or differential diagnoses
-- **Bold** key medical terms and conditions
-- Provide clinical context when available"""
+- **Bold** key medical terms and conditions"""
 
     try:
-        # Retrieve relevant chunks
-        relevant_docs = retriever.get_relevant_documents(query=user_input, k=3)
+        # Get query embedding
+        query_embedding = ai_client.get_embeddings([user_input])
+        
+        if query_embedding is None:
+            return "❌ Failed to process query. Please try again."
+        
+        # Search for relevant documents
+        relevant_docs = vector_store.similarity_search(query_embedding[0], k=3)
         
         if not relevant_docs:
-            return "⚠️ No relevant medical information found in the knowledge base for this query."
+            return "⚠️ No relevant medical information found for this query."
         
-        context = "\n\n---\n\n".join([doc.page_content for doc in relevant_docs])
+        context = "\n\n---\n\n".join(relevant_docs)
         
         prompt = f"""{system_message}
 
-MEDICAL CONTEXT FROM MERCK MANUAL:
+MEDICAL CONTEXT:
 {context}
 
-HEALTHCARE PROFESSIONAL QUESTION:
-{user_input}
+QUESTION: {user_input}
 
 MEDICAL RESPONSE (based only on the provided context):"""
         
-        # Generate response using cloud AI
-        response = ai_client.generate(prompt, max_tokens=max_tokens)
+        response = ai_client.generate(prompt, model=model, max_tokens=max_tokens)
         
         if not response.startswith("❌"):
-            response += "\n\n---\n*Response based on Merck Manual content. Always verify with current medical literature and clinical guidelines.*"
+            response += "\n\n---\n*Response based on medical knowledge base. Always verify with current medical literature and clinical guidelines.*"
         
         return response
         
@@ -358,101 +328,87 @@ MEDICAL RESPONSE (based only on the provided context):"""
         return f'❌ Error generating medical response: {str(e)}'
 
 def main():
-    # AI Configuration
+    # API Configuration in sidebar
     with st.sidebar:
         st.markdown('<div class="api-config">', unsafe_allow_html=True)
-        st.header("🤖 AI Configuration")
+        st.header("🔑 OpenAI Configuration")
         
-        provider = st.selectbox(
-            "AI Provider",
-            ["openai", "anthropic", "replicate", "local-ollama"],
-            help="Choose your AI provider"
+        # Check for API key in environment first
+        api_key = os.getenv('OPENAI_API_KEY')
+        
+        if not api_key:
+            api_key = st.text_input(
+                "OpenAI API Key", 
+                type="password", 
+                help="Get your API key from https://platform.openai.com/api-keys"
+            )
+        else:
+            st.success("✅ API key loaded from environment")
+        
+        model = st.selectbox(
+            "Model", 
+            ["gpt-3.5-turbo", "gpt-4o-mini", "gpt-4"],
+            help="gpt-3.5-turbo is fastest and cheapest"
         )
         
-        if provider == "openai":
-            api_key = st.text_input("OpenAI API Key", type="password", help="Get from https://platform.openai.com/api-keys")
-            model = st.selectbox("Model", ["gpt-3.5-turbo", "gpt-4", "gpt-4-turbo"])
-        elif provider == "anthropic":
-            api_key = st.text_input("Anthropic API Key", type="password", help="Get from https://console.anthropic.com/")
-            model = st.selectbox("Model", ["claude-3-haiku-20240307", "claude-3-sonnet-20240229"])
-        elif provider == "replicate":
-            api_key = st.text_input("Replicate API Key", type="password", help="Get from https://replicate.com/account/api-tokens")
-            model = st.selectbox("Model", ["meta/llama-2-7b-chat", "mistralai/mistral-7b-instruct-v0.1"])
+        if api_key:
+            st.info(f"🤖 Using: {model}")
         else:
-            api_key = None
-            model = "llama2"
-            st.info("Using local Ollama - make sure it's running!")
+            st.warning("⚠️ Please add your OpenAI API key")
         
         st.markdown('</div>', unsafe_allow_html=True)
         
-        # Configuration
-        st.header("⚙️ Settings")
         max_tokens = st.slider("Response Length", 256, 1024, 512)
     
     # Initialize AI client
-    ai_client = CloudAIClient()
-    
-    if provider != "local-ollama":
-        if api_key:
-            ai_client.configure(provider, api_key, model)
-        else:
-            st.warning("Please provide API key to continue")
-            st.stop()
+    ai_client = OpenAIClient(api_key)
     
     # System status
     col1, col2, col3 = st.columns(3)
     
     with col1:
-        if provider == "local-ollama":
-            # Check local Ollama
-            try:
-                response = requests.get("http://localhost:11434/api/tags", timeout=2)
-                if response.status_code == 200:
-                    st.markdown('<div class="status-indicator status-success">🟢 Ollama Connected</div>', unsafe_allow_html=True)
-                else:
-                    st.markdown('<div class="status-indicator status-error">🔴 Ollama Offline</div>', unsafe_allow_html=True)
-            except:
-                st.markdown('<div class="status-indicator status-error">🔴 Ollama Offline</div>', unsafe_allow_html=True)
+        if ai_client.is_configured():
+            st.markdown('<div class="status-indicator status-success">🟢 OpenAI Connected</div>', unsafe_allow_html=True)
         else:
-            if ai_client.is_configured():
-                st.markdown('<div class="status-indicator status-success">🟢 AI Connected</div>', unsafe_allow_html=True)
-            else:
-                st.markdown('<div class="status-indicator status-warning">🟡 API Key Needed</div>', unsafe_allow_html=True)
+            st.markdown('<div class="status-indicator status-warning">🟡 API Key Needed</div>', unsafe_allow_html=True)
     
     with col2:
         session_duration = datetime.now() - st.session_state.session_start
-        st.markdown(f'<div class="status-indicator">⏱️ Session: {str(session_duration).split(".")[0]}</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="status-indicator">⏱️ {str(session_duration).split(".")[0]}</div>', unsafe_allow_html=True)
     
     with col3:
         st.markdown(f'<div class="status-indicator">💬 Queries: {st.session_state.query_count}</div>', unsafe_allow_html=True)
     
     # Initialize knowledge base
-    if not st.session_state.system_initialized:
+    if not st.session_state.system_initialized and api_key:
         with st.spinner("🚀 Initializing medical knowledge base..."):
-            retriever = setup_vectorstore()
-            if retriever:
-                st.session_state.retriever = retriever
+            vector_store = setup_knowledge_base(ai_client)
+            if vector_store:
+                st.session_state.vector_store = vector_store
                 st.session_state.system_initialized = True
-                st.success("✅ MedAssist AI is ready for medical consultations!")
+                st.success("✅ MedAssist AI is ready!")
                 st.rerun()
     
-    # Sample questions in sidebar
+    # Sidebar info
     with st.sidebar:
-        if hasattr(st.session_state, 'total_pages'):
+        if hasattr(st.session_state, 'total_chunks'):
             st.header("📊 Knowledge Base")
             col_a, col_b = st.columns(2)
             with col_a:
-                st.metric("Pages", st.session_state.total_pages)
+                st.metric("Topics", 15)
             with col_b:
                 st.metric("Chunks", st.session_state.total_chunks)
         
         st.header("🩺 Sample Questions")
         sample_questions = [
-            "What are the clinical signs of myocardial infarction?",
+            "What are the symptoms of myocardial infarction?",
             "How is Type 2 diabetes diagnosed?",
-            "What are the contraindications for Metformin?",
-            "What is the emergency treatment for anaphylaxis?",
-            "What are the symptoms of pneumonia?"
+            "What are the signs of pneumonia?",
+            "What is the treatment for anaphylaxis?",
+            "How is hypertension defined?",
+            "What are the symptoms of stroke?",
+            "How is appendicitis diagnosed?",
+            "What are the side effects of Metformin?"
         ]
         
         for i, question in enumerate(sample_questions):
@@ -467,7 +423,7 @@ def main():
         if message["role"] == "user":
             st.markdown(f"""
             <div class="user-message">
-                <strong>👩‍⚕️ Healthcare Professional:</strong><br>
+                <strong>👩‍⚕️ Question:</strong><br>
                 {message["content"]}
             </div>
             """, unsafe_allow_html=True)
@@ -480,7 +436,7 @@ def main():
             """, unsafe_allow_html=True)
     
     # Chat input
-    user_input = st.chat_input("💬 Ask a medical question based on the Merck Manual...")
+    user_input = st.chat_input("💬 Ask a medical question...")
     
     # Handle sample question selection
     if hasattr(st.session_state, 'user_input') and st.session_state.user_input:
@@ -488,29 +444,21 @@ def main():
         del st.session_state.user_input
     
     if user_input and st.session_state.system_initialized:
-        # Add user message
+        if not ai_client.is_configured():
+            st.error("Please configure your OpenAI API key first!")
+            return
+        
         st.session_state.messages.append({"role": "user", "content": user_input})
         st.session_state.query_count += 1
         
-        # Generate response
-        with st.spinner("🔍 Consulting AI with medical knowledge base..."):
-            if provider == "local-ollama":
-                # Use local Ollama if available
-                try:
-                    from pathlib import Path
-                    if Path("app.py").exists():  # Fallback to previous Ollama logic
-                        response = "Local Ollama not properly configured for cloud deployment"
-                    else:
-                        response = "Please configure a cloud AI provider"
-                except:
-                    response = "Please configure a cloud AI provider for online deployment"
-            else:
-                response = generate_rag_response(
-                    ai_client, 
-                    st.session_state.retriever, 
-                    user_input, 
-                    max_tokens=max_tokens
-                )
+        with st.spinner("🔍 Consulting medical AI..."):
+            response = generate_rag_response(
+                ai_client, 
+                st.session_state.vector_store, 
+                user_input, 
+                model=model, 
+                max_tokens=max_tokens
+            )
         
         st.session_state.messages.append({"role": "assistant", "content": response})
         st.rerun()
@@ -518,10 +466,8 @@ def main():
     # Medical disclaimer
     st.markdown("""
     <div class="medical-disclaimer">
-        <strong>⚠️ Important Medical Disclaimer</strong><br>
-        This AI assistant provides information for educational purposes only and should not replace professional medical advice, diagnosis, or treatment. 
-        The responses are based on the Merck Manual content and should be verified against current medical literature and clinical guidelines.
-        Always consult with qualified healthcare professionals for medical decisions. In case of medical emergencies, contact emergency services immediately.
+        <strong>⚠️ Medical Disclaimer</strong><br>
+        This AI provides educational information only. Always consult healthcare professionals for medical decisions.
     </div>
     """, unsafe_allow_html=True)
 
