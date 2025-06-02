@@ -24,91 +24,357 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Enhanced CSS for medical theme
+# Enhanced CSS with modern design, gradients, and animations
 st.markdown("""
 <style>
-    .main-header {
-        background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
-        padding: 2rem;
-        border-radius: 10px;
-        color: white;
-        margin-bottom: 2rem;
-        text-align: center;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    
+    * {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     }
+    
+    .stApp {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        min-height: 100vh;
+    }
+    
+    .main-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 3rem 2rem;
+        border-radius: 20px;
+        color: white;
+        margin-bottom: 2.5rem;
+        text-align: center;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        position: relative;
+        overflow: hidden;
+        animation: slideInDown 0.8s ease-out;
+    }
+    
+    .main-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+    }
+    
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    
+    @keyframes slideInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+    
     .main-header h1 {
         margin: 0;
-        font-size: 2.5rem;
+        font-size: 3rem;
         font-weight: 700;
+        text-shadow: 2px 4px 8px rgba(0,0,0,0.2);
+        letter-spacing: -1px;
+        position: relative;
+        z-index: 1;
     }
+    
     .main-header p {
-        margin: 0.5rem 0 0 0;
-        font-size: 1.1rem;
-        opacity: 0.9;
+        margin: 1rem 0 0 0;
+        font-size: 1.25rem;
+        opacity: 0.95;
+        font-weight: 300;
+        letter-spacing: 0.5px;
+        position: relative;
+        z-index: 1;
     }
+    
     .status-indicator {
         display: inline-flex;
         align-items: center;
-        padding: 0.5rem 1rem;
-        border-radius: 20px;
+        padding: 0.75rem 1.25rem;
+        border-radius: 30px;
         font-weight: 500;
         margin: 0.25rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        animation: fadeIn 0.5s ease-out;
+        backdrop-filter: blur(10px);
     }
+    
+    .status-indicator:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    }
+    
     .status-success {
-        background-color: #dcfce7;
+        background: linear-gradient(135deg, rgba(220, 252, 231, 0.9) 0%, rgba(187, 247, 208, 0.9) 100%);
         color: #166534;
-        border: 1px solid #bbf7d0;
+        border: 1px solid rgba(187, 247, 208, 0.5);
     }
+    
     .status-warning {
-        background-color: #fef3c7;
+        background: linear-gradient(135deg, rgba(254, 243, 199, 0.9) 0%, rgba(253, 230, 138, 0.9) 100%);
         color: #92400e;
-        border: 1px solid #fde68a;
+        border: 1px solid rgba(253, 230, 138, 0.5);
     }
+    
     .status-error {
-        background-color: #fee2e2;
+        background: linear-gradient(135deg, rgba(254, 226, 226, 0.9) 0%, rgba(254, 202, 202, 0.9) 100%);
         color: #991b1b;
-        border: 1px solid #fecaca;
+        border: 1px solid rgba(254, 202, 202, 0.5);
     }
+    
     .user-message {
-        background: #f1f5f9;
-        padding: 1rem;
-        border-radius: 10px;
+        background: linear-gradient(135deg, #ffffff 0%, #e8f2ff 100%);
+        padding: 1.25rem;
+        border-radius: 16px;
         border-left: 4px solid #3b82f6;
-        margin: 1rem 0;
+        margin: 1.5rem 0;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+        transition: all 0.3s ease;
+        animation: fadeIn 0.5s ease-out;
     }
+    
+    .user-message:hover {
+        transform: translateX(4px);
+        box-shadow: 0 6px 20px rgba(59, 130, 246, 0.15);
+    }
+    
     .assistant-message {
-        background: #f0fdf4;
-        padding: 1rem;
-        border-radius: 10px;
+        background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+        padding: 1.25rem;
+        border-radius: 16px;
         border-left: 4px solid #059669;
-        margin: 1rem 0;
+        margin: 1.5rem 0;
+        box-shadow: 0 4px 12px rgba(5, 150, 105, 0.1);
+        transition: all 0.3s ease;
+        animation: fadeIn 0.5s ease-out;
     }
+    
+    .assistant-message:hover {
+        transform: translateX(4px);
+        box-shadow: 0 6px 20px rgba(5, 150, 105, 0.15);
+    }
+    
     .medical-disclaimer {
-        background: #fef2f2;
-        border: 1px solid #fecaca;
-        border-radius: 8px;
-        padding: 1rem;
-        margin: 1rem 0;
+        background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+        border: 2px solid rgba(254, 202, 202, 0.5);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin: 2rem 0;
         color: #991b1b;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 8px 24px rgba(239, 68, 68, 0.1);
+        transition: all 0.3s ease;
     }
+    
+    .medical-disclaimer:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 32px rgba(239, 68, 68, 0.15);
+    }
+    
     .api-config {
-        background: #eff6ff;
-        border: 1px solid #bfdbfe;
-        border-radius: 8px;
-        padding: 1rem;
-        margin: 1rem 0;
+        background: linear-gradient(135deg, rgba(239, 246, 255, 0.95) 0%, rgba(219, 234, 254, 0.95) 100%);
+        border: 2px solid rgba(191, 219, 254, 0.5);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin: 1.5rem 0;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 8px 24px rgba(59, 130, 246, 0.1);
     }
+    
     .knowledge-source {
-        background: #f8fafc;
-        border: 1px solid #e2e8f0;
-        border-radius: 8px;
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        border-radius: 12px;
+        padding: 1.25rem;
+        margin: 0.75rem 0;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+    
+    .knowledge-source:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+        border-color: rgba(191, 219, 254, 0.8);
+    }
+    
+    /* Streamlit button styling */
+    .stButton > button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 30px;
+        font-weight: 500;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+    
+    .stButton > button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    }
+    
+    .stButton > button:active {
+        transform: translateY(0);
+    }
+    
+    /* Sidebar styling */
+    section[data-testid="stSidebar"] {
+        background: linear-gradient(180deg, rgba(249, 250, 251, 0.95) 0%, rgba(243, 244, 246, 0.95) 100%);
+        backdrop-filter: blur(10px);
+    }
+    
+    section[data-testid="stSidebar"] .stButton > button {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        width: 100%;
+        margin: 0.25rem 0;
+    }
+    
+    section[data-testid="stSidebar"] .stButton > button:hover {
+        background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+    }
+    
+    /* Text input styling */
+    .stTextInput > div > div > input {
+        border-radius: 12px;
+        border: 2px solid rgba(191, 219, 254, 0.3);
+        padding: 0.75rem 1rem;
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.9);
+    }
+    
+    .stTextInput > div > div > input:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    /* Select box styling */
+    .stSelectbox > div > div > div {
+        border-radius: 12px;
+        border: 2px solid rgba(191, 219, 254, 0.3);
+        transition: all 0.3s ease;
+    }
+    
+    .stSelectbox > div > div > div:hover {
+        border-color: #667eea;
+    }
+    
+    /* Metrics styling */
+    [data-testid="metric-container"] {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(249, 250, 251, 0.9) 100%);
+        border: 1px solid rgba(229, 231, 235, 0.5);
+        border-radius: 12px;
         padding: 1rem;
-        margin: 0.5rem 0;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+    }
+    
+    [data-testid="metric-container"]:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Progress bar styling */
+    .stProgress > div > div > div > div {
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        border-radius: 10px;
+    }
+    
+    /* Expander styling */
+    .streamlit-expanderHeader {
+        background: linear-gradient(135deg, rgba(249, 250, 251, 0.9) 0%, rgba(243, 244, 246, 0.9) 100%);
+        border-radius: 12px;
+        border: 1px solid rgba(229, 231, 235, 0.5);
+        transition: all 0.3s ease;
+    }
+    
+    .streamlit-expanderHeader:hover {
+        background: linear-gradient(135deg, rgba(243, 244, 246, 0.9) 0%, rgba(237, 238, 240, 0.9) 100%);
+        border-color: rgba(191, 219, 254, 0.5);
+    }
+    
+    /* Chat input styling */
+    .stChatInput > div {
+        border-radius: 16px;
+        border: 2px solid rgba(191, 219, 254, 0.3);
+        background: rgba(255, 255, 255, 0.95);
+        transition: all 0.3s ease;
+    }
+    
+    .stChatInput > div:focus-within {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    /* Loading spinner enhancement */
+    .stSpinner > div {
+        border-color: #667eea !important;
+    }
+    
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
+    
+    ::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.05);
+        border-radius: 10px;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 10px;
+        transition: all 0.3s ease;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    }
+    
+    /* Pulse animation for live indicators */
+    @keyframes pulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.4);
+        }
+        70% {
+            box-shadow: 0 0 0 10px rgba(102, 126, 234, 0);
+        }
+        100% {
+            box-shadow: 0 0 0 0 rgba(102, 126, 234, 0);
+        }
+    }
+    
+    .pulse {
+        animation: pulse 2s infinite;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# Header
+# Header with enhanced animations
 st.markdown("""
 <div class="main-header">
     <h1>🩺 MedAssist AI</h1>
@@ -233,11 +499,13 @@ def load_comprehensive_medical_knowledge():
 def setup_medical_vectorstore(use_openai_embeddings=False, api_key=None):
     """Setup medical knowledge base with FAISS"""
     try:
-        progress_bar = st.progress(0)
-        status_text = st.empty()
-        
-        status_text.text("📄 Loading comprehensive medical knowledge...")
-        progress_bar.progress(20)
+        progress_container = st.container()
+        with progress_container:
+            progress_bar = st.progress(0)
+            status_text = st.empty()
+            
+            status_text.markdown('<div class="status-indicator" style="background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%); color: #4338ca; width: 100%; justify-content: center; font-size: 1.1rem; padding: 1rem; margin-bottom: 1rem;">📄 Loading comprehensive medical knowledge...</div>', unsafe_allow_html=True)
+            progress_bar.progress(20)
         
         # Load medical documents
         medical_docs_text = load_comprehensive_medical_knowledge()
@@ -247,7 +515,7 @@ def setup_medical_vectorstore(use_openai_embeddings=False, api_key=None):
                     for i, doc in enumerate(medical_docs_text)]
         
         progress_bar.progress(40)
-        status_text.text("✂️ Processing medical content...")
+        status_text.markdown('<div class="status-indicator" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); color: #78350f; width: 100%; justify-content: center; font-size: 1.1rem; padding: 1rem; margin-bottom: 1rem;">✂️ Processing medical content...</div>', unsafe_allow_html=True)
         
         # Split documents into chunks
         text_splitter = RecursiveCharacterTextSplitter(
@@ -259,7 +527,7 @@ def setup_medical_vectorstore(use_openai_embeddings=False, api_key=None):
         document_chunks = text_splitter.split_documents(documents)
         
         progress_bar.progress(60)
-        status_text.text("🧮 Creating medical embeddings...")
+        status_text.markdown('<div class="status-indicator" style="background: linear-gradient(135deg, #ddd6fe 0%, #c4b5fd 100%); color: #6b21a8; width: 100%; justify-content: center; font-size: 1.1rem; padding: 1rem; margin-bottom: 1rem;">🧮 Creating medical embeddings...</div>', unsafe_allow_html=True)
         
         # Choose embedding model
         if use_openai_embeddings and api_key:
@@ -273,7 +541,7 @@ def setup_medical_vectorstore(use_openai_embeddings=False, api_key=None):
             )
         
         progress_bar.progress(80)
-        status_text.text("🗄️ Building FAISS vector store...")
+        status_text.markdown('<div class="status-indicator" style="background: linear-gradient(135deg, #fecaca 0%, #fbbf24 100%); color: #92400e; width: 100%; justify-content: center; font-size: 1.1rem; padding: 1rem; margin-bottom: 1rem;">🗄️ Building FAISS vector store...</div>', unsafe_allow_html=True)
         
         # Create FAISS vector store
         vectorstore = FAISS.from_documents(
@@ -288,7 +556,7 @@ def setup_medical_vectorstore(use_openai_embeddings=False, api_key=None):
         )
         
         progress_bar.progress(100)
-        status_text.text("✅ Medical knowledge base ready!")
+        status_text.markdown('<div class="status-indicator status-success pulse" style="width: 100%; justify-content: center; font-size: 1.2rem; padding: 1rem; margin-bottom: 1rem;">✅ Medical knowledge base ready!</div>', unsafe_allow_html=True)
         
         # Store stats
         st.session_state.total_chunks = len(document_chunks)
@@ -379,10 +647,10 @@ MEDICAL RESPONSE (based only on the provided context):"""
         return f'❌ Error generating medical response: {str(e)}'
 
 def main():
-    # API Configuration in sidebar
+    # API Configuration in sidebar with enhanced styling
     with st.sidebar:
-        st.markdown('<div class="api-config">', unsafe_allow_html=True)
-        st.header("🔑 AI Configuration")
+        st.markdown('<div class="api-config" style="animation: fadeIn 0.8s ease-out;">', unsafe_allow_html=True)
+        st.markdown("### 🔑 AI Configuration")
         
         # Check for API key in environment first
         api_key = os.getenv('OPENAI_API_KEY')
@@ -391,10 +659,11 @@ def main():
             api_key = st.text_input(
                 "OpenAI API Key", 
                 type="password", 
-                help="Get your API key from https://platform.openai.com/api-keys"
+                help="Get your API key from https://platform.openai.com/api-keys",
+                placeholder="sk-..."
             )
         else:
-            st.success("✅ API key loaded from environment")
+            st.markdown('<div class="status-indicator status-success" style="width: 100%; justify-content: center;">✅ API key loaded from environment</div>', unsafe_allow_html=True)
         
         # Embedding model choice
         use_openai_embeddings = st.checkbox(
@@ -411,10 +680,10 @@ def main():
         
         if api_key:
             embedding_info = "OpenAI Embeddings" if use_openai_embeddings else "SentenceTransformers (Free)"
-            st.info(f"🤖 Model: {model}")
-            st.info(f"📊 Embeddings: {embedding_info}")
+            st.markdown(f'<div class="status-indicator" style="background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%); color: #4338ca; border: 1px solid #a5b4fc; width: 100%; justify-content: center; margin-top: 1rem;">🤖 Model: {model}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="status-indicator" style="background: linear-gradient(135deg, #ddd6fe 0%, #c4b5fd 100%); color: #6b21a8; border: 1px solid #a78bfa; width: 100%; justify-content: center;">📊 Embeddings: {embedding_info}</div>', unsafe_allow_html=True)
         else:
-            st.warning("⚠️ Please add your OpenAI API key")
+            st.markdown('<div class="status-indicator status-warning" style="width: 100%; justify-content: center;">⚠️ Please add your OpenAI API key</div>', unsafe_allow_html=True)
         
         st.markdown('</div>', unsafe_allow_html=True)
         
@@ -423,26 +692,28 @@ def main():
     # Initialize AI client
     ai_client = MedicalAIClient(api_key, use_openai_embeddings)
     
-    # System status
+    # System status with enhanced cards
+    st.markdown('<div style="margin: 1.5rem 0;">', unsafe_allow_html=True)
     col1, col2, col3 = st.columns(3)
     
     with col1:
         if ai_client.is_configured():
-            st.markdown('<div class="status-indicator status-success">🟢 AI Connected</div>', unsafe_allow_html=True)
+            st.markdown('<div class="status-indicator status-success pulse" style="width: 100%; justify-content: center;">🟢 AI Connected</div>', unsafe_allow_html=True)
         else:
-            st.markdown('<div class="status-indicator status-warning">🟡 API Key Needed</div>', unsafe_allow_html=True)
+            st.markdown('<div class="status-indicator status-warning" style="width: 100%; justify-content: center;">🟡 API Key Needed</div>', unsafe_allow_html=True)
     
     with col2:
         session_duration = datetime.now() - st.session_state.session_start
-        st.markdown(f'<div class="status-indicator">⏱️ {str(session_duration).split(".")[0]}</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="status-indicator" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); color: #78350f; border: 1px solid #fcd34d; width: 100%; justify-content: center;">⏱️ {str(session_duration).split(".")[0]}</div>', unsafe_allow_html=True)
     
     with col3:
-        st.markdown(f'<div class="status-indicator">💬 Queries: {st.session_state.query_count}</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="status-indicator" style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); color: #1e3a8a; border: 1px solid #93c5fd; width: 100%; justify-content: center;">💬 Queries: {st.session_state.query_count}</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
     
-    # Initialize knowledge base
+    # Initialize knowledge base with enhanced loading experience
     if not st.session_state.system_initialized:
         if not api_key and use_openai_embeddings:
-            st.warning("⚠️ OpenAI API key required for OpenAI embeddings. Using SentenceTransformers instead.")
+            st.markdown('<div class="status-indicator status-warning" style="width: 100%; justify-content: center; margin: 1rem 0;">⚠️ OpenAI API key required for OpenAI embeddings. Using SentenceTransformers instead.</div>', unsafe_allow_html=True)
             use_openai_embeddings = False
         
         with st.spinner("🚀 Initializing medical knowledge base with FAISS..."):
@@ -450,13 +721,15 @@ def main():
             if retriever:
                 st.session_state.retriever = retriever
                 st.session_state.system_initialized = True
-                st.success("✅ MedAssist AI is ready for medical consultations!")
+                st.markdown('<div class="status-indicator status-success pulse" style="width: 100%; justify-content: center; margin: 1rem 0; font-size: 1.1rem; padding: 1rem 2rem;">✅ MedAssist AI is ready for medical consultations!</div>', unsafe_allow_html=True)
+                time.sleep(1)
                 st.rerun()
     
-    # Sidebar info
+    # Sidebar info with enhanced styling
     with st.sidebar:
         if hasattr(st.session_state, 'total_chunks'):
-            st.header("📊 Knowledge Base")
+            st.markdown('<div style="margin-top: 2rem;">', unsafe_allow_html=True)
+            st.markdown("### 📊 Knowledge Base")
             col_a, col_b = st.columns(2)
             with col_a:
                 st.metric("Topics", st.session_state.total_topics)
@@ -464,9 +737,11 @@ def main():
                 st.metric("Chunks", st.session_state.total_chunks)
             
             if hasattr(st.session_state, 'embedding_model'):
-                st.info(f"🔬 Using: {st.session_state.embedding_model}")
+                st.markdown(f'<div class="status-indicator" style="background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%); color: #6b21a8; border: 1px solid #d8b4fe; width: 100%; justify-content: center; margin-top: 1rem;">🔬 Using: {st.session_state.embedding_model}</div>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
         
-        st.header("🩺 Sample Medical Questions")
+        st.markdown('<div style="margin-top: 2rem;">', unsafe_allow_html=True)
+        st.markdown("### 🩺 Sample Medical Questions")
         sample_questions = [
             "What are the clinical signs and symptoms of acute myocardial infarction?",
             "How is Type 2 diabetes mellitus diagnosed and managed?",
@@ -483,9 +758,10 @@ def main():
         for i, question in enumerate(sample_questions):
             if st.button(question, key=f"sample_{i}", use_container_width=True):
                 st.session_state.user_input = question
+        st.markdown('</div>', unsafe_allow_html=True)
     
-    # Main chat interface
-    st.markdown("## 💬 Medical Consultation")
+    # Main chat interface with enhanced styling
+    st.markdown('<h2 style="color: #4338ca; font-weight: 600; margin: 2rem 0 1.5rem 0;">💬 Medical Consultation</h2>', unsafe_allow_html=True)
     
     # Display chat history
     for message in st.session_state.messages:
@@ -514,13 +790,17 @@ def main():
     
     if user_input and st.session_state.system_initialized:
         if not ai_client.is_configured():
-            st.error("Please configure your OpenAI API key first!")
+            st.markdown('<div class="status-indicator status-error" style="width: 100%; justify-content: center; margin: 1rem 0;">Please configure your OpenAI API key first!</div>', unsafe_allow_html=True)
             return
         
         st.session_state.messages.append({"role": "user", "content": user_input})
         st.session_state.query_count += 1
         
         with st.spinner("🔍 Consulting medical knowledge base with FAISS..."):
+            # Add a subtle loading animation
+            loading_placeholder = st.empty()
+            loading_placeholder.markdown('<div class="status-indicator pulse" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; width: 100%; justify-content: center; margin: 1rem 0;">🤔 Analyzing your medical query...</div>', unsafe_allow_html=True)
+            
             response = generate_medical_rag_response(
                 ai_client, 
                 st.session_state.retriever, 
@@ -528,11 +808,13 @@ def main():
                 model=model, 
                 max_tokens=max_tokens
             )
+            
+            loading_placeholder.empty()
         
         st.session_state.messages.append({"role": "assistant", "content": response})
         st.rerun()
     
-    # Show knowledge sources if response exists
+    # Show knowledge sources if response exists with enhanced styling
     if st.session_state.messages and st.session_state.system_initialized:
         with st.expander("🔍 View Knowledge Sources (Last Query)"):
             if st.session_state.messages:
@@ -541,19 +823,19 @@ def main():
                     docs = st.session_state.retriever.get_relevant_documents(last_question[-1]["content"])
                     for i, doc in enumerate(docs):
                         st.markdown(f"""
-                        <div class="knowledge-source">
-                            <strong>Source {i+1}:</strong><br>
-                            {doc.page_content[:400]}...
+                        <div class="knowledge-source" style="animation: fadeIn 0.5s ease-out {0.1 * i}s both;">
+                            <strong style="color: #6366f1;">Source {i+1}:</strong><br>
+                            <span style="color: #475569; line-height: 1.6;">{doc.page_content[:400]}...</span>
                         </div>
                         """, unsafe_allow_html=True)
     
-    # Medical disclaimer
+    # Medical disclaimer with enhanced styling
     st.markdown("""
-    <div class="medical-disclaimer">
-        <strong>⚠️ Important Medical Disclaimer</strong><br>
-        This AI assistant provides information for educational purposes only and should not replace professional medical advice, diagnosis, or treatment. 
+    <div class="medical-disclaimer" style="animation: fadeIn 1s ease-out 0.5s both;">
+        <strong style="font-size: 1.1rem;">⚠️ Important Medical Disclaimer</strong><br>
+        <span style="line-height: 1.6; opacity: 0.9;">This AI assistant provides information for educational purposes only and should not replace professional medical advice, diagnosis, or treatment. 
         The responses are based on medical knowledge and should be verified against current medical literature and clinical guidelines.
-        Always consult with qualified healthcare professionals for medical decisions. In case of medical emergencies, contact emergency services immediately.
+        Always consult with qualified healthcare professionals for medical decisions. In case of medical emergencies, contact emergency services immediately.</span>
     </div>
     """, unsafe_allow_html=True)
 
