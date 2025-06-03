@@ -24,53 +24,72 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Enhanced CSS with modern design, gradients, and animations
+# Enhanced CSS with your brand styling
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Lato:wght@300;400;500;600&display=swap');
+    
+    :root {
+        --charcoal: #2A2A2A;
+        --chestnut: #A44A3F;
+        --khaki: #A59E8C;
+        --pearl: #D7CEB2;
+        --bone: #F5F2EA;
+        --white: #FFFFFF;
+        --shadow-light: rgba(42, 42, 42, 0.08);
+        --shadow-medium: rgba(42, 42, 42, 0.15);
+        --shadow-heavy: rgba(42, 42, 42, 0.25);
+    }
     
     * {
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        font-family: 'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     }
     
     .stApp {
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        background: linear-gradient(135deg, var(--bone) 0%, var(--pearl) 100%);
         min-height: 100vh;
+        color: var(--charcoal);
     }
     
+    /* Hide Streamlit branding */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    
     .main-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 3rem 2rem;
-        border-radius: 20px;
-        color: white;
-        margin-bottom: 2.5rem;
+        background: linear-gradient(135deg, var(--charcoal) 0%, #404040 100%);
+        padding: 3.5rem 2.5rem;
+        border-radius: 24px;
+        color: var(--bone);
+        margin-bottom: 3rem;
         text-align: center;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        box-shadow: 0 24px 48px var(--shadow-heavy);
         position: relative;
         overflow: hidden;
-        animation: slideInDown 0.8s ease-out;
+        animation: slideInDown 1s ease-out;
+        border: 1px solid rgba(164, 74, 63, 0.2);
     }
     
     .main-header::before {
         content: '';
         position: absolute;
-        top: -50%;
-        right: -50%;
-        width: 200%;
-        height: 200%;
-        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-        animation: rotate 30s linear infinite;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--chestnut) 0%, var(--khaki) 50%, var(--chestnut) 100%);
+        animation: shimmer 3s ease-in-out infinite;
     }
     
-    @keyframes rotate {
-        from { transform: rotate(0deg); }
-        to { transform: rotate(360deg); }
+    @keyframes shimmer {
+        0%, 100% { opacity: 0.6; }
+        50% { opacity: 1; }
     }
     
     @keyframes slideInDown {
         from {
             opacity: 0;
-            transform: translateY(-30px);
+            transform: translateY(-40px);
         }
         to {
             opacity: 1;
@@ -78,307 +97,651 @@ st.markdown("""
         }
     }
     
-    @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
     
-    @keyframes pulse {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.05); }
+    @keyframes pulseGlow {
+        0%, 100% { 
+            box-shadow: 0 0 20px rgba(164, 74, 63, 0.3);
+        }
+        50% { 
+            box-shadow: 0 0 30px rgba(164, 74, 63, 0.5);
+        }
     }
     
     .main-header h1 {
         margin: 0;
-        font-size: 3rem;
-        font-weight: 700;
-        text-shadow: 2px 4px 8px rgba(0,0,0,0.2);
-        letter-spacing: -1px;
-        position: relative;
-        z-index: 1;
+        font-family: 'Playfair Display', serif;
+        font-size: 3.8rem;
+        font-weight: 900;
+        text-shadow: 2px 4px 8px rgba(0,0,0,0.3);
+        letter-spacing: -2px;
+        background: linear-gradient(135deg, var(--bone) 0%, var(--pearl) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
     }
     
-    .main-header p {
-        margin: 1rem 0 0 0;
-        font-size: 1.25rem;
-        opacity: 0.95;
-        font-weight: 300;
-        letter-spacing: 0.5px;
-        position: relative;
-        z-index: 1;
+    .main-header .subtitle {
+        margin: 1.5rem 0 0 0;
+        font-family: 'Lato', sans-serif;
+        font-size: 1.4rem;
+        opacity: 0.9;
+        font-weight: 400;
+        letter-spacing: 1px;
+        color: var(--pearl);
     }
     
-    .status-indicator {
+    .medical-badge {
         display: inline-flex;
         align-items: center;
-        padding: 0.75rem 1.25rem;
-        border-radius: 30px;
-        font-weight: 500;
-        margin: 0.25rem;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        cursor: pointer;
-        animation: fadeIn 0.5s ease-out;
-        backdrop-filter: blur(10px);
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        filter: drop-shadow(2px 4px 8px rgba(0,0,0,0.2));
     }
     
-    .status-indicator:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    .status-card {
+        background: var(--white);
+        border: 2px solid var(--pearl);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin: 0.75rem 0;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 8px 24px var(--shadow-light);
+        position: relative;
+        overflow: hidden;
+        animation: fadeInUp 0.6s ease-out;
+    }
+    
+    .status-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: linear-gradient(90deg, var(--chestnut) 0%, var(--khaki) 100%);
+    }
+    
+    .status-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 16px 40px var(--shadow-medium);
+        border-color: var(--chestnut);
     }
     
     .status-success {
-        background: linear-gradient(135deg, rgba(220, 252, 231, 0.9) 0%, rgba(187, 247, 208, 0.9) 100%);
-        color: #166534;
-        border: 1px solid rgba(187, 247, 208, 0.5);
+        border-left: 6px solid var(--chestnut);
+        background: linear-gradient(135deg, var(--white) 0%, rgba(164, 74, 63, 0.02) 100%);
     }
     
     .status-warning {
-        background: linear-gradient(135deg, rgba(254, 243, 199, 0.9) 0%, rgba(253, 230, 138, 0.9) 100%);
-        color: #92400e;
-        border: 1px solid rgba(253, 230, 138, 0.5);
+        border-left: 6px solid var(--khaki);
+        background: linear-gradient(135deg, var(--white) 0%, rgba(165, 158, 140, 0.02) 100%);
     }
     
     .status-error {
-        background: linear-gradient(135deg, rgba(254, 226, 226, 0.9) 0%, rgba(254, 202, 202, 0.9) 100%);
-        color: #991b1b;
-        border: 1px solid rgba(254, 202, 202, 0.5);
+        border-left: 6px solid #d32f2f;
+        background: linear-gradient(135deg, var(--white) 0%, rgba(211, 47, 47, 0.02) 100%);
+    }
+    
+    .status-text {
+        font-family: 'Lato', sans-serif;
+        font-weight: 500;
+        font-size: 1rem;
+        color: var(--charcoal);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .status-icon {
+        font-size: 1.25rem;
+        filter: drop-shadow(1px 2px 4px rgba(0,0,0,0.1));
+    }
+    
+    .chat-container {
+        background: var(--white);
+        border-radius: 20px;
+        padding: 2rem;
+        margin: 2rem 0;
+        box-shadow: 0 12px 32px var(--shadow-light);
+        border: 1px solid var(--pearl);
+        position: relative;
+    }
+    
+    .chat-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--chestnut) 0%, var(--khaki) 50%, var(--chestnut) 100%);
+        border-radius: 20px 20px 0 0;
     }
     
     .user-message {
-        background: linear-gradient(135deg, #ffffff 0%, #e8f2ff 100%);
-        padding: 1.25rem;
-        border-radius: 16px;
-        border-left: 4px solid #3b82f6;
+        background: linear-gradient(135deg, var(--bone) 0%, var(--pearl) 100%);
+        border: 2px solid var(--khaki);
+        padding: 1.75rem;
+        border-radius: 20px;
         margin: 1.5rem 0;
-        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+        box-shadow: 0 8px 24px var(--shadow-light);
         transition: all 0.3s ease;
-        animation: fadeIn 0.5s ease-out;
+        animation: fadeInUp 0.5s ease-out;
+        position: relative;
+    }
+    
+    .user-message::before {
+        content: '👩‍⚕️';
+        position: absolute;
+        top: -12px;
+        left: 20px;
+        background: var(--white);
+        padding: 8px 12px;
+        border-radius: 20px;
+        font-size: 1.2rem;
+        box-shadow: 0 4px 12px var(--shadow-light);
     }
     
     .user-message:hover {
-        transform: translateX(4px);
-        box-shadow: 0 6px 20px rgba(59, 130, 246, 0.15);
+        transform: translateX(8px);
+        box-shadow: 0 12px 32px var(--shadow-medium);
     }
     
     .assistant-message {
-        background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-        padding: 1.25rem;
-        border-radius: 16px;
-        border-left: 4px solid #059669;
+        background: linear-gradient(135deg, var(--white) 0%, rgba(164, 74, 63, 0.03) 100%);
+        border: 2px solid var(--chestnut);
+        padding: 1.75rem;
+        border-radius: 20px;
         margin: 1.5rem 0;
-        box-shadow: 0 4px 12px rgba(5, 150, 105, 0.1);
+        box-shadow: 0 8px 24px var(--shadow-light);
         transition: all 0.3s ease;
-        animation: fadeIn 0.5s ease-out;
+        animation: fadeInUp 0.5s ease-out;
+        position: relative;
+    }
+    
+    .assistant-message::before {
+        content: '🩺';
+        position: absolute;
+        top: -12px;
+        left: 20px;
+        background: var(--chestnut);
+        color: var(--white);
+        padding: 8px 12px;
+        border-radius: 20px;
+        font-size: 1.2rem;
+        box-shadow: 0 4px 12px var(--shadow-medium);
     }
     
     .assistant-message:hover {
-        transform: translateX(4px);
-        box-shadow: 0 6px 20px rgba(5, 150, 105, 0.15);
+        transform: translateX(8px);
+        box-shadow: 0 12px 32px var(--shadow-medium);
+    }
+    
+    .message-content {
+        font-family: 'Lato', sans-serif;
+        line-height: 1.7;
+        color: var(--charcoal);
+        margin-top: 0.5rem;
+    }
+    
+    .message-label {
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: var(--charcoal);
+        margin-bottom: 0.5rem;
     }
     
     .medical-disclaimer {
-        background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
-        border: 2px solid rgba(254, 202, 202, 0.5);
-        border-radius: 16px;
-        padding: 1.5rem;
-        margin: 2rem 0;
-        color: #991b1b;
-        backdrop-filter: blur(10px);
-        box-shadow: 0 8px 24px rgba(239, 68, 68, 0.1);
-        transition: all 0.3s ease;
+        background: linear-gradient(135deg, #fef7f7 0%, #fef0f0 100%);
+        border: 2px solid #ffcdd2;
+        border-radius: 20px;
+        padding: 2rem;
+        margin: 3rem 0;
+        color: #b71c1c;
+        box-shadow: 0 12px 32px rgba(183, 28, 28, 0.1);
+        position: relative;
+        animation: fadeInUp 0.8s ease-out;
     }
     
-    .medical-disclaimer:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 12px 32px rgba(239, 68, 68, 0.15);
+    .medical-disclaimer::before {
+        content: '⚠️';
+        position: absolute;
+        top: -15px;
+        left: 30px;
+        background: #ffebee;
+        padding: 10px 15px;
+        border-radius: 25px;
+        font-size: 1.5rem;
+        box-shadow: 0 4px 12px rgba(183, 28, 28, 0.2);
+        border: 2px solid #ffcdd2;
     }
     
-    .api-config {
-        background: linear-gradient(135deg, rgba(239, 246, 255, 0.95) 0%, rgba(219, 234, 254, 0.95) 100%);
-        border: 2px solid rgba(191, 219, 254, 0.5);
-        border-radius: 16px;
-        padding: 1.5rem;
+    .disclaimer-title {
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        font-size: 1.3rem;
+        margin-bottom: 1rem;
+        color: #b71c1c;
+    }
+    
+    .disclaimer-text {
+        font-family: 'Lato', sans-serif;
+        line-height: 1.6;
+        opacity: 0.9;
+    }
+    
+    .sidebar-config {
+        background: linear-gradient(135deg, var(--white) 0%, var(--bone) 100%);
+        border: 2px solid var(--pearl);
+        border-radius: 20px;
+        padding: 2rem;
         margin: 1.5rem 0;
-        backdrop-filter: blur(10px);
-        box-shadow: 0 8px 24px rgba(59, 130, 246, 0.1);
+        box-shadow: 0 8px 24px var(--shadow-light);
+        position: relative;
+    }
+    
+    .sidebar-config::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--chestnut) 0%, var(--khaki) 100%);
+        border-radius: 20px 20px 0 0;
+    }
+    
+    .config-title {
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        font-size: 1.4rem;
+        color: var(--charcoal);
+        margin-bottom: 1.5rem;
+        text-align: center;
     }
     
     .knowledge-source {
-        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-        border: 1px solid rgba(226, 232, 240, 0.8);
-        border-radius: 12px;
-        padding: 1.25rem;
-        margin: 0.75rem 0;
+        background: var(--white);
+        border: 2px solid var(--pearl);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin: 1rem 0;
         transition: all 0.3s ease;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 4px 16px var(--shadow-light);
+        position: relative;
+    }
+    
+    .knowledge-source::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: linear-gradient(180deg, var(--chestnut) 0%, var(--khaki) 100%);
+        border-radius: 16px 0 0 16px;
     }
     
     .knowledge-source:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
-        border-color: rgba(191, 219, 254, 0.8);
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px var(--shadow-medium);
+        border-color: var(--chestnut);
     }
     
-    /* Streamlit button styling */
+    .source-label {
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        color: var(--chestnut);
+        font-size: 1.1rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .source-content {
+        font-family: 'Lato', sans-serif;
+        color: var(--charcoal);
+        line-height: 1.6;
+        opacity: 0.9;
+    }
+    
+    /* Enhanced Streamlit component styling */
     .stButton > button {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
+        background: linear-gradient(135deg, var(--chestnut) 0%, #b85550 100%);
+        color: var(--white);
         border: none;
-        padding: 0.75rem 1.5rem;
-        border-radius: 30px;
-        font-weight: 500;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        padding: 0.9rem 2rem;
+        border-radius: 25px;
+        font-family: 'Lato', sans-serif;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 6px 16px rgba(164, 74, 63, 0.3);
+        border: 2px solid transparent;
+        letter-spacing: 0.5px;
     }
     
     .stButton > button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
-        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        transform: translateY(-3px);
+        box-shadow: 0 12px 28px rgba(164, 74, 63, 0.4);
+        background: linear-gradient(135deg, #b85550 0%, var(--chestnut) 100%);
+        border-color: var(--khaki);
     }
     
     .stButton > button:active {
-        transform: translateY(0);
+        transform: translateY(-1px);
     }
     
     /* Sidebar styling */
     section[data-testid="stSidebar"] {
-        background: linear-gradient(180deg, rgba(249, 250, 251, 0.95) 0%, rgba(243, 244, 246, 0.95) 100%);
-        backdrop-filter: blur(10px);
+        background: linear-gradient(180deg, var(--bone) 0%, var(--pearl) 100%);
+        border-right: 3px solid var(--khaki);
     }
     
     section[data-testid="stSidebar"] .stButton > button {
-        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        background: linear-gradient(135deg, var(--khaki) 0%, #b5ae9b 100%);
         width: 100%;
-        margin: 0.25rem 0;
+        margin: 0.4rem 0;
+        font-size: 0.9rem;
+        padding: 0.8rem 1.5rem;
     }
     
     section[data-testid="stSidebar"] .stButton > button:hover {
-        background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+        background: linear-gradient(135deg, #b5ae9b 0%, var(--khaki) 100%);
+        color: var(--charcoal);
     }
     
-    /* Text input styling */
+    /* Enhanced input styling */
     .stTextInput > div > div > input {
-        border-radius: 12px;
-        border: 2px solid rgba(191, 219, 254, 0.3);
-        padding: 0.75rem 1rem;
+        border-radius: 16px;
+        border: 2px solid var(--pearl);
+        padding: 1rem 1.5rem;
         transition: all 0.3s ease;
-        background: rgba(255, 255, 255, 0.9);
+        background: var(--white);
+        font-family: 'Lato', sans-serif;
+        color: var(--charcoal);
+        font-size: 1rem;
     }
     
     .stTextInput > div > div > input:focus {
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        border-color: var(--chestnut);
+        box-shadow: 0 0 0 4px rgba(164, 74, 63, 0.1);
+        outline: none;
+    }
+    
+    .stTextInput > div > div > input::placeholder {
+        color: var(--khaki);
+        opacity: 0.7;
     }
     
     /* Select box styling */
     .stSelectbox > div > div > div {
-        border-radius: 12px;
-        border: 2px solid rgba(191, 219, 254, 0.3);
+        border-radius: 16px;
+        border: 2px solid var(--pearl);
         transition: all 0.3s ease;
+        background: var(--white);
     }
     
     .stSelectbox > div > div > div:hover {
-        border-color: #667eea;
+        border-color: var(--chestnut);
     }
     
     /* Metrics styling */
     [data-testid="metric-container"] {
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(249, 250, 251, 0.9) 100%);
-        border: 1px solid rgba(229, 231, 235, 0.5);
-        border-radius: 12px;
-        padding: 1rem;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        background: linear-gradient(135deg, var(--white) 0%, var(--bone) 100%);
+        border: 2px solid var(--pearl);
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 6px 20px var(--shadow-light);
         transition: all 0.3s ease;
+        position: relative;
+    }
+    
+    [data-testid="metric-container"]::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: linear-gradient(90deg, var(--chestnut) 0%, var(--khaki) 100%);
+        border-radius: 16px 16px 0 0;
     }
     
     [data-testid="metric-container"]:hover {
         transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 10px 28px var(--shadow-medium);
+    }
+    
+    [data-testid="metric-container"] [data-testid="metric-value"] {
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        color: var(--chestnut);
+    }
+    
+    [data-testid="metric-container"] [data-testid="metric-label"] {
+        font-family: 'Lato', sans-serif;
+        color: var(--charcoal);
+        font-weight: 500;
     }
     
     /* Progress bar styling */
     .stProgress > div > div > div > div {
-        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(90deg, var(--chestnut) 0%, var(--khaki) 100%);
+        border-radius: 10px;
+    }
+    
+    .stProgress > div > div > div {
+        background-color: var(--pearl);
         border-radius: 10px;
     }
     
     /* Expander styling */
     .streamlit-expanderHeader {
-        background: linear-gradient(135deg, rgba(249, 250, 251, 0.9) 0%, rgba(243, 244, 246, 0.9) 100%);
-        border-radius: 12px;
-        border: 1px solid rgba(229, 231, 235, 0.5);
+        background: linear-gradient(135deg, var(--white) 0%, var(--bone) 100%);
+        border-radius: 16px;
+        border: 2px solid var(--pearl);
         transition: all 0.3s ease;
+        padding: 1rem 1.5rem;
+        font-family: 'Lato', sans-serif;
+        font-weight: 600;
+        color: var(--charcoal);
     }
     
     .streamlit-expanderHeader:hover {
-        background: linear-gradient(135deg, rgba(243, 244, 246, 0.9) 0%, rgba(237, 238, 240, 0.9) 100%);
-        border-color: rgba(191, 219, 254, 0.5);
+        background: linear-gradient(135deg, var(--bone) 0%, var(--pearl) 100%);
+        border-color: var(--chestnut);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px var(--shadow-light);
     }
     
     /* Chat input styling */
     .stChatInput > div {
-        border-radius: 16px;
-        border: 2px solid rgba(191, 219, 254, 0.3);
-        background: rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        border: 3px solid var(--pearl);
+        background: var(--white);
         transition: all 0.3s ease;
+        padding: 0.5rem;
     }
     
     .stChatInput > div:focus-within {
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        border-color: var(--chestnut);
+        box-shadow: 0 0 0 4px rgba(164, 74, 63, 0.1);
+    }
+    
+    .stChatInput input {
+        font-family: 'Lato', sans-serif;
+        font-size: 1.1rem;
+        color: var(--charcoal);
+        padding: 1rem 1.5rem;
+    }
+    
+    .stChatInput input::placeholder {
+        color: var(--khaki);
+        opacity: 0.8;
     }
     
     /* Loading spinner enhancement */
     .stSpinner > div {
-        border-color: #667eea !important;
+        border-color: var(--chestnut) !important;
     }
     
     /* Scrollbar styling */
     ::-webkit-scrollbar {
-        width: 10px;
-        height: 10px;
+        width: 12px;
+        height: 12px;
     }
     
     ::-webkit-scrollbar-track {
-        background: rgba(0, 0, 0, 0.05);
+        background: var(--pearl);
         border-radius: 10px;
     }
     
     ::-webkit-scrollbar-thumb {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, var(--chestnut) 0%, var(--khaki) 100%);
         border-radius: 10px;
         transition: all 0.3s ease;
     }
     
     ::-webkit-scrollbar-thumb:hover {
-        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        background: linear-gradient(135deg, var(--khaki) 0%, var(--chestnut) 100%);
     }
     
-    /* Pulse animation for live indicators */
-    @keyframes pulse {
-        0% {
-            box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.4);
-        }
-        70% {
-            box-shadow: 0 0 0 10px rgba(102, 126, 234, 0);
-        }
-        100% {
-            box-shadow: 0 0 0 0 rgba(102, 126, 234, 0);
-        }
+    /* Section headers */
+    .section-header {
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        font-size: 2rem;
+        color: var(--charcoal);
+        margin: 2rem 0 1.5rem 0;
+        text-align: center;
+        position: relative;
     }
     
-    .pulse {
-        animation: pulse 2s infinite;
+    .section-header::after {
+        content: '';
+        position: absolute;
+        bottom: -8px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80px;
+        height: 3px;
+        background: linear-gradient(90deg, var(--chestnut) 0%, var(--khaki) 100%);
+        border-radius: 3px;
+    }
+    
+    /* Sample questions styling */
+    .sample-questions {
+        background: linear-gradient(135deg, var(--white) 0%, var(--bone) 100%);
+        border-radius: 20px;
+        padding: 2rem;
+        margin: 2rem 0;
+        border: 2px solid var(--pearl);
+        box-shadow: 0 8px 24px var(--shadow-light);
+    }
+    
+    .sample-questions h3 {
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        color: var(--charcoal);
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+    
+    /* Loading states */
+    .loading-indicator {
+        background: linear-gradient(135deg, var(--chestnut) 0%, var(--khaki) 100%);
+        color: var(--white);
+        padding: 1rem 2rem;
+        border-radius: 25px;
+        font-family: 'Lato', sans-serif;
+        font-weight: 500;
+        text-align: center;
+        margin: 1rem 0;
+        animation: pulseGlow 2s infinite;
+        box-shadow: 0 8px 24px rgba(164, 74, 63, 0.3);
+    }
+    
+    /* Typography for markdown content */
+    .markdown-content h1 {
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        color: var(--charcoal);
+    }
+    
+    .markdown-content h2 {
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        color: var(--chestnut);
+        border-bottom: 2px solid var(--pearl);
+        padding-bottom: 0.5rem;
+    }
+    
+    .markdown-content h3 {
+        font-family: 'Lato', sans-serif;
+        font-weight: 600;
+        color: var(--charcoal);
+    }
+    
+    .markdown-content p {
+        font-family: 'Lato', sans-serif;
+        line-height: 1.7;
+        color: var(--charcoal);
+    }
+    
+    .markdown-content strong {
+        color: var(--chestnut);
+        font-weight: 600;
+    }
+    
+    .markdown-content em {
+        color: var(--khaki);
+        font-style: italic;
+    }
+    
+    .markdown-content ul, .markdown-content ol {
+        font-family: 'Lato', sans-serif;
+        color: var(--charcoal);
+        line-height: 1.6;
+    }
+    
+    .markdown-content li {
+        margin-bottom: 0.5rem;
+    }
+    
+    .markdown-content code {
+        background: var(--pearl);
+        color: var(--charcoal);
+        padding: 0.2rem 0.4rem;
+        border-radius: 6px;
+        font-family: 'Monaco', 'Consolas', monospace;
+    }
+    
+    .markdown-content pre {
+        background: var(--bone);
+        border: 2px solid var(--pearl);
+        border-radius: 12px;
+        padding: 1rem;
+        overflow-x: auto;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# Header with enhanced animations
+# Enhanced Header with your branding
 st.markdown("""
 <div class="main-header">
-    <h1>🩺 MedAssist AI</h1>
-    <p>Advanced Medical Question Answering System powered by FAISS & Medical Knowledge</p>
+    <div class="medical-badge">🩺</div>
+    <h1>MedAssist AI</h1>
+    <p class="subtitle">Advanced Medical Question Answering System</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -504,7 +867,7 @@ def setup_medical_vectorstore(use_openai_embeddings=False, api_key=None):
             progress_bar = st.progress(0)
             status_text = st.empty()
             
-            status_text.markdown('<div class="status-indicator" style="background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%); color: #4338ca; width: 100%; justify-content: center; font-size: 1.1rem; padding: 1rem; margin-bottom: 1rem;">📄 Loading comprehensive medical knowledge...</div>', unsafe_allow_html=True)
+            status_text.markdown('<div class="loading-indicator">📄 Loading comprehensive medical knowledge...</div>', unsafe_allow_html=True)
             progress_bar.progress(20)
         
         # Load medical documents
@@ -515,7 +878,7 @@ def setup_medical_vectorstore(use_openai_embeddings=False, api_key=None):
                     for i, doc in enumerate(medical_docs_text)]
         
         progress_bar.progress(40)
-        status_text.markdown('<div class="status-indicator" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); color: #78350f; width: 100%; justify-content: center; font-size: 1.1rem; padding: 1rem; margin-bottom: 1rem;">✂️ Processing medical content...</div>', unsafe_allow_html=True)
+        status_text.markdown('<div class="loading-indicator">✂️ Processing medical content...</div>', unsafe_allow_html=True)
         
         # Split documents into chunks
         text_splitter = RecursiveCharacterTextSplitter(
@@ -527,7 +890,7 @@ def setup_medical_vectorstore(use_openai_embeddings=False, api_key=None):
         document_chunks = text_splitter.split_documents(documents)
         
         progress_bar.progress(60)
-        status_text.markdown('<div class="status-indicator" style="background: linear-gradient(135deg, #ddd6fe 0%, #c4b5fd 100%); color: #6b21a8; width: 100%; justify-content: center; font-size: 1.1rem; padding: 1rem; margin-bottom: 1rem;">🧮 Creating medical embeddings...</div>', unsafe_allow_html=True)
+        status_text.markdown('<div class="loading-indicator">🧮 Creating medical embeddings...</div>', unsafe_allow_html=True)
         
         # Choose embedding model
         if use_openai_embeddings and api_key:
@@ -541,7 +904,7 @@ def setup_medical_vectorstore(use_openai_embeddings=False, api_key=None):
             )
         
         progress_bar.progress(80)
-        status_text.markdown('<div class="status-indicator" style="background: linear-gradient(135deg, #fecaca 0%, #fbbf24 100%); color: #92400e; width: 100%; justify-content: center; font-size: 1.1rem; padding: 1rem; margin-bottom: 1rem;">🗄️ Building FAISS vector store...</div>', unsafe_allow_html=True)
+        status_text.markdown('<div class="loading-indicator">🗄️ Building FAISS vector store...</div>', unsafe_allow_html=True)
         
         # Create FAISS vector store
         vectorstore = FAISS.from_documents(
@@ -556,14 +919,14 @@ def setup_medical_vectorstore(use_openai_embeddings=False, api_key=None):
         )
         
         progress_bar.progress(100)
-        status_text.markdown('<div class="status-indicator status-success pulse" style="width: 100%; justify-content: center; font-size: 1.2rem; padding: 1rem; margin-bottom: 1rem;">✅ Medical knowledge base ready!</div>', unsafe_allow_html=True)
+        status_text.markdown('<div class="status-card status-success"><div class="status-text"><span class="status-icon">✅</span>Medical knowledge base ready!</div></div>', unsafe_allow_html=True)
         
         # Store stats
         st.session_state.total_chunks = len(document_chunks)
         st.session_state.total_topics = len(medical_docs_text)
         st.session_state.embedding_model = "OpenAI" if use_openai_embeddings else "SentenceTransformer"
         
-        time.sleep(1)
+        time.sleep(1.5)
         progress_bar.empty()
         status_text.empty()
         
@@ -649,8 +1012,8 @@ MEDICAL RESPONSE (based only on the provided context):"""
 def main():
     # API Configuration in sidebar with enhanced styling
     with st.sidebar:
-        st.markdown('<div class="api-config" style="animation: fadeIn 0.8s ease-out;">', unsafe_allow_html=True)
-        st.markdown("### 🔑 AI Configuration")
+        st.markdown('<div class="sidebar-config">', unsafe_allow_html=True)
+        st.markdown('<div class="config-title">🔑 AI Configuration</div>', unsafe_allow_html=True)
         
         # Check for API key in environment first
         api_key = os.getenv('OPENAI_API_KEY')
@@ -663,7 +1026,7 @@ def main():
                 placeholder="sk-..."
             )
         else:
-            st.markdown('<div class="status-indicator status-success" style="width: 100%; justify-content: center;">✅ API key loaded from environment</div>', unsafe_allow_html=True)
+            st.markdown('<div class="status-card status-success"><div class="status-text"><span class="status-icon">✅</span>API key loaded from environment</div></div>', unsafe_allow_html=True)
         
         # Embedding model choice
         use_openai_embeddings = st.checkbox(
@@ -680,10 +1043,10 @@ def main():
         
         if api_key:
             embedding_info = "OpenAI Embeddings" if use_openai_embeddings else "SentenceTransformers (Free)"
-            st.markdown(f'<div class="status-indicator" style="background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%); color: #4338ca; border: 1px solid #a5b4fc; width: 100%; justify-content: center; margin-top: 1rem;">🤖 Model: {model}</div>', unsafe_allow_html=True)
-            st.markdown(f'<div class="status-indicator" style="background: linear-gradient(135deg, #ddd6fe 0%, #c4b5fd 100%); color: #6b21a8; border: 1px solid #a78bfa; width: 100%; justify-content: center;">📊 Embeddings: {embedding_info}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="status-card"><div class="status-text"><span class="status-icon">🤖</span>Model: {model}</div></div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="status-card"><div class="status-text"><span class="status-icon">📊</span>Embeddings: {embedding_info}</div></div>', unsafe_allow_html=True)
         else:
-            st.markdown('<div class="status-indicator status-warning" style="width: 100%; justify-content: center;">⚠️ Please add your OpenAI API key</div>', unsafe_allow_html=True)
+            st.markdown('<div class="status-card status-warning"><div class="status-text"><span class="status-icon">⚠️</span>Please add your OpenAI API key</div></div>', unsafe_allow_html=True)
         
         st.markdown('</div>', unsafe_allow_html=True)
         
@@ -693,27 +1056,25 @@ def main():
     ai_client = MedicalAIClient(api_key, use_openai_embeddings)
     
     # System status with enhanced cards
-    st.markdown('<div style="margin: 1.5rem 0;">', unsafe_allow_html=True)
     col1, col2, col3 = st.columns(3)
     
     with col1:
         if ai_client.is_configured():
-            st.markdown('<div class="status-indicator status-success pulse" style="width: 100%; justify-content: center;">🟢 AI Connected</div>', unsafe_allow_html=True)
+            st.markdown('<div class="status-card status-success"><div class="status-text"><span class="status-icon">🟢</span>AI Connected</div></div>', unsafe_allow_html=True)
         else:
-            st.markdown('<div class="status-indicator status-warning" style="width: 100%; justify-content: center;">🟡 API Key Needed</div>', unsafe_allow_html=True)
+            st.markdown('<div class="status-card status-warning"><div class="status-text"><span class="status-icon">🟡</span>API Key Needed</div></div>', unsafe_allow_html=True)
     
     with col2:
         session_duration = datetime.now() - st.session_state.session_start
-        st.markdown(f'<div class="status-indicator" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); color: #78350f; border: 1px solid #fcd34d; width: 100%; justify-content: center;">⏱️ {str(session_duration).split(".")[0]}</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="status-card"><div class="status-text"><span class="status-icon">⏱️</span>{str(session_duration).split(".")[0]}</div></div>', unsafe_allow_html=True)
     
     with col3:
-        st.markdown(f'<div class="status-indicator" style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); color: #1e3a8a; border: 1px solid #93c5fd; width: 100%; justify-content: center;">💬 Queries: {st.session_state.query_count}</div>', unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="status-card"><div class="status-text"><span class="status-icon">💬</span>Queries: {st.session_state.query_count}</div></div>', unsafe_allow_html=True)
     
     # Initialize knowledge base with enhanced loading experience
     if not st.session_state.system_initialized:
         if not api_key and use_openai_embeddings:
-            st.markdown('<div class="status-indicator status-warning" style="width: 100%; justify-content: center; margin: 1rem 0;">⚠️ OpenAI API key required for OpenAI embeddings. Using SentenceTransformers instead.</div>', unsafe_allow_html=True)
+            st.markdown('<div class="status-card status-warning"><div class="status-text"><span class="status-icon">⚠️</span>OpenAI API key required for OpenAI embeddings. Using SentenceTransformers instead.</div></div>', unsafe_allow_html=True)
             use_openai_embeddings = False
         
         with st.spinner("🚀 Initializing medical knowledge base with FAISS..."):
@@ -721,15 +1082,15 @@ def main():
             if retriever:
                 st.session_state.retriever = retriever
                 st.session_state.system_initialized = True
-                st.markdown('<div class="status-indicator status-success pulse" style="width: 100%; justify-content: center; margin: 1rem 0; font-size: 1.1rem; padding: 1rem 2rem;">✅ MedAssist AI is ready for medical consultations!</div>', unsafe_allow_html=True)
+                st.markdown('<div class="status-card status-success"><div class="status-text"><span class="status-icon">✅</span>MedAssist AI is ready for medical consultations!</div></div>', unsafe_allow_html=True)
                 time.sleep(1)
                 st.rerun()
     
     # Sidebar info with enhanced styling
     with st.sidebar:
         if hasattr(st.session_state, 'total_chunks'):
-            st.markdown('<div style="margin-top: 2rem;">', unsafe_allow_html=True)
-            st.markdown("### 📊 Knowledge Base")
+            st.markdown('<div class="sidebar-config" style="margin-top: 2rem;">', unsafe_allow_html=True)
+            st.markdown('<div class="config-title">📊 Knowledge Base</div>', unsafe_allow_html=True)
             col_a, col_b = st.columns(2)
             with col_a:
                 st.metric("Topics", st.session_state.total_topics)
@@ -737,11 +1098,11 @@ def main():
                 st.metric("Chunks", st.session_state.total_chunks)
             
             if hasattr(st.session_state, 'embedding_model'):
-                st.markdown(f'<div class="status-indicator" style="background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%); color: #6b21a8; border: 1px solid #d8b4fe; width: 100%; justify-content: center; margin-top: 1rem;">🔬 Using: {st.session_state.embedding_model}</div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="status-card"><div class="status-text"><span class="status-icon">🔬</span>Using: {st.session_state.embedding_model}</div></div>', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
         
-        st.markdown('<div style="margin-top: 2rem;">', unsafe_allow_html=True)
-        st.markdown("### 🩺 Sample Medical Questions")
+        st.markdown('<div class="sample-questions">', unsafe_allow_html=True)
+        st.markdown('<h3>🩺 Sample Medical Questions</h3>', unsafe_allow_html=True)
         sample_questions = [
             "What are the clinical signs and symptoms of acute myocardial infarction?",
             "How is Type 2 diabetes mellitus diagnosed and managed?",
@@ -761,24 +1122,29 @@ def main():
         st.markdown('</div>', unsafe_allow_html=True)
     
     # Main chat interface with enhanced styling
-    st.markdown('<h2 style="color: #4338ca; font-weight: 600; margin: 2rem 0 1.5rem 0;">💬 Medical Consultation</h2>', unsafe_allow_html=True)
+    st.markdown('<div class="section-header">💬 Medical Consultation</div>', unsafe_allow_html=True)
+    
+    # Chat container
+    st.markdown('<div class="chat-container">', unsafe_allow_html=True)
     
     # Display chat history
     for message in st.session_state.messages:
         if message["role"] == "user":
             st.markdown(f"""
             <div class="user-message">
-                <strong>👩‍⚕️ Healthcare Professional:</strong><br>
-                {message["content"]}
+                <div class="message-label">Healthcare Professional</div>
+                <div class="message-content">{message["content"]}</div>
             </div>
             """, unsafe_allow_html=True)
         else:
             st.markdown(f"""
             <div class="assistant-message">
-                <strong>🩺 MedAssist AI:</strong><br>
-                {message["content"]}
+                <div class="message-label">MedAssist AI</div>
+                <div class="message-content markdown-content">{message["content"]}</div>
             </div>
             """, unsafe_allow_html=True)
+    
+    st.markdown('</div>', unsafe_allow_html=True)
     
     # Chat input
     user_input = st.chat_input("💬 Ask a medical question...")
@@ -790,7 +1156,7 @@ def main():
     
     if user_input and st.session_state.system_initialized:
         if not ai_client.is_configured():
-            st.markdown('<div class="status-indicator status-error" style="width: 100%; justify-content: center; margin: 1rem 0;">Please configure your OpenAI API key first!</div>', unsafe_allow_html=True)
+            st.markdown('<div class="status-card status-error"><div class="status-text"><span class="status-icon">❌</span>Please configure your OpenAI API key first!</div></div>', unsafe_allow_html=True)
             return
         
         st.session_state.messages.append({"role": "user", "content": user_input})
@@ -799,7 +1165,7 @@ def main():
         with st.spinner("🔍 Consulting medical knowledge base with FAISS..."):
             # Add a subtle loading animation
             loading_placeholder = st.empty()
-            loading_placeholder.markdown('<div class="status-indicator pulse" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; width: 100%; justify-content: center; margin: 1rem 0;">🤔 Analyzing your medical query...</div>', unsafe_allow_html=True)
+            loading_placeholder.markdown('<div class="loading-indicator">🤔 Analyzing your medical query...</div>', unsafe_allow_html=True)
             
             response = generate_medical_rag_response(
                 ai_client, 
@@ -823,19 +1189,19 @@ def main():
                     docs = st.session_state.retriever.get_relevant_documents(last_question[-1]["content"])
                     for i, doc in enumerate(docs):
                         st.markdown(f"""
-                        <div class="knowledge-source" style="animation: fadeIn 0.5s ease-out {0.1 * i}s both;">
-                            <strong style="color: #6366f1;">Source {i+1}:</strong><br>
-                            <span style="color: #475569; line-height: 1.6;">{doc.page_content[:400]}...</span>
+                        <div class="knowledge-source" style="animation: fadeInUp 0.5s ease-out {0.1 * i}s both;">
+                            <div class="source-label">Source {i+1}</div>
+                            <div class="source-content">{doc.page_content[:400]}...</div>
                         </div>
                         """, unsafe_allow_html=True)
     
     # Medical disclaimer with enhanced styling
     st.markdown("""
-    <div class="medical-disclaimer" style="animation: fadeIn 1s ease-out 0.5s both;">
-        <strong style="font-size: 1.1rem;">⚠️ Important Medical Disclaimer</strong><br>
-        <span style="line-height: 1.6; opacity: 0.9;">This AI assistant provides information for educational purposes only and should not replace professional medical advice, diagnosis, or treatment. 
+    <div class="medical-disclaimer">
+        <div class="disclaimer-title">Important Medical Disclaimer</div>
+        <div class="disclaimer-text">This AI assistant provides information for educational purposes only and should not replace professional medical advice, diagnosis, or treatment. 
         The responses are based on medical knowledge and should be verified against current medical literature and clinical guidelines.
-        Always consult with qualified healthcare professionals for medical decisions. In case of medical emergencies, contact emergency services immediately.</span>
+        Always consult with qualified healthcare professionals for medical decisions. In case of medical emergencies, contact emergency services immediately.</div>
     </div>
     """, unsafe_allow_html=True)
 
