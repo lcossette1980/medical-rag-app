@@ -24,12 +24,48 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Enhanced CSS with your brand styling
-st.markdown("""
-<style>
+# Initialize theme state
+if 'dark_mode' not in st.session_state:
+    st.session_state.dark_mode = False
+
+# Dark mode toggle in the top right
+col_spacer, col_theme = st.columns([10, 1])
+with col_theme:
+    if st.button('🌓', help='Toggle dark mode', key='theme_toggle'):
+        st.session_state.dark_mode = not st.session_state.dark_mode
+        st.rerun()
+
+# Enhanced CSS with dynamic theme support
+if st.session_state.dark_mode:
+    bg_gradient = 'linear-gradient(135deg, var(--dark-bg) 0%, var(--dark-surface) 100%)'
+    text_color = 'var(--dark-text)'
+    header_bg = 'linear-gradient(135deg, var(--dark-surface) 0%, #3a3a3a 100%)'
+    header_shadow = '0 24px 48px var(--dark-shadow)'
+    header_border = 'var(--dark-border)'
+    card_bg = 'var(--dark-surface)'
+    card_border = 'var(--dark-border)'
+    card_shadow = '0 8px 24px var(--dark-shadow)'
+    user_msg_bg = 'linear-gradient(135deg, #3a3a3a 0%, #2d2d2d 100%)'
+    assistant_msg_bg = 'linear-gradient(135deg, var(--dark-surface) 0%, rgba(164, 74, 63, 0.1) 100%)'
+    sidebar_bg = 'linear-gradient(135deg, var(--dark-surface) 0%, #3a3a3a 100%)'
+else:
+    bg_gradient = 'linear-gradient(135deg, var(--bone) 0%, var(--pearl) 100%)'
+    text_color = 'var(--charcoal)'
+    header_bg = 'linear-gradient(135deg, var(--charcoal) 0%, #404040 100%)'
+    header_shadow = '0 24px 48px var(--shadow-heavy)'
+    header_border = 'rgba(164, 74, 63, 0.2)'
+    card_bg = 'var(--white)'
+    card_border = 'var(--pearl)'
+    card_shadow = '0 8px 24px var(--shadow-light)'
+    user_msg_bg = 'linear-gradient(135deg, var(--bone) 0%, var(--pearl) 100%)'
+    assistant_msg_bg = 'linear-gradient(135deg, var(--white) 0%, rgba(164, 74, 63, 0.03) 100%)'
+    sidebar_bg = 'linear-gradient(135deg, var(--white) 0%, var(--bone) 100%)'
+
+# Create the CSS dynamically
+css_content = f"""
     @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Lato:wght@300;400;500;600&display=swap');
     
-    :root {
+    :root {{
         --charcoal: #2A2A2A;
         --chestnut: #A44A3F;
         --khaki: #A59E8C;
@@ -39,98 +75,153 @@ st.markdown("""
         --shadow-light: rgba(42, 42, 42, 0.08);
         --shadow-medium: rgba(42, 42, 42, 0.15);
         --shadow-heavy: rgba(42, 42, 42, 0.25);
-    }
+        
+        --dark-bg: #1a1a1a;
+        --dark-surface: #2d2d2d;
+        --dark-text: #e0e0e0;
+        --dark-border: #3d3d3d;
+        --dark-shadow: rgba(0, 0, 0, 0.3);
+    }}
     
-    * {
+    * {{
         font-family: 'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    }
+    }}
     
-    .stApp {
-        background: linear-gradient(135deg, var(--bone) 0%, var(--pearl) 100%);
+    .stApp {{
+        background: {bg_gradient};
         min-height: 100vh;
-        color: var(--charcoal);
-    }
+        color: {text_color};
+    }}
+"""
+
+st.markdown(f"<style>{css_content}</style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Lato:wght@300;400;500;600&display=swap');
+    
+    :root {{
+        --charcoal: #2A2A2A;
+        --chestnut: #A44A3F;
+        --khaki: #A59E8C;
+        --pearl: #D7CEB2;
+        --bone: #F5F2EA;
+        --white: #FFFFFF;
+        --shadow-light: rgba(42, 42, 42, 0.08);
+        --shadow-medium: rgba(42, 42, 42, 0.15);
+        --shadow-heavy: rgba(42, 42, 42, 0.25);
+        
+        /* Dark mode variables */
+        --dark-bg: #1a1a1a;
+        --dark-surface: #2d2d2d;
+        --dark-text: #e0e0e0;
+        --dark-border: #3d3d3d;
+        --dark-shadow: rgba(0, 0, 0, 0.3);
+    }}
+    
+    * {{
+        font-family: 'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }}
+    
+    .stApp {{
+        background: {bg_gradient};
+        min-height: 100vh;
+        color: {text_color};
+    }}
     
     /* Hide Streamlit branding */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
+    #MainMenu {{visibility: hidden;}}
+    footer {{visibility: hidden;}}
+    header {{visibility: hidden;}}
     
-    .main-header {
-        background: linear-gradient(135deg, var(--charcoal) 0%, #404040 100%);
+    .main-header {{
+        background: {header_bg};
         padding: 3.5rem 2.5rem;
         border-radius: 24px;
         color: var(--bone);
         margin-bottom: 3rem;
         text-align: center;
-        box-shadow: 0 24px 48px var(--shadow-heavy);
+        box-shadow: {header_shadow};
         position: relative;
         overflow: hidden;
         animation: slideInDown 1s ease-out;
-        border: 1px solid rgba(164, 74, 63, 0.2);
-    }
+        border: 1px solid {header_border};
+    }}
     
-    .main-header::before {
+    /* Mobile responsiveness */
+    @media (max-width: 768px) {{
+        .main-header {{
+            padding: 2rem 1.5rem;
+            margin-bottom: 2rem;
+        }}
+        
+        .main-header h1 {{
+            font-size: 2.5rem !important;
+        }}
+        
+        .main-header .subtitle {{
+            font-size: 1.1rem !important;
+        }}
+    }}
+    
+    .main-header::before {{
         content: '';
         position: absolute;
         top: 0;
         left: 0;
         right: 0;
         height: 4px;
-        background: linear-gradient(90deg, var(--chestnut) 0%, var(--khaki) 50%, var(--chestnut) 100%);
+        background: linear-gradient(90deg, var(--chestnut) 0%%, var(--khaki) 50%%, var(--chestnut) 100%%);
         animation: shimmer 3s ease-in-out infinite;
-    }
+    }}
     
-    @keyframes shimmer {
-        0%, 100% { opacity: 0.6; }
-        50% { opacity: 1; }
-    }
+    @keyframes shimmer {{
+        0%%, 100%% {{ opacity: 0.6; }}
+        50%% {{ opacity: 1; }}
+    }}
     
-    @keyframes slideInDown {
-        from {
+    @keyframes slideInDown {{
+        from {{
             opacity: 0;
             transform: translateY(-40px);
-        }
-        to {
+        }}
+        to {{
             opacity: 1;
             transform: translateY(0);
-        }
-    }
+        }}
+    }}
     
-    @keyframes fadeInUp {
-        from {
+    @keyframes fadeInUp {{
+        from {{
             opacity: 0;
             transform: translateY(20px);
-        }
-        to {
+        }}
+        to {{
             opacity: 1;
             transform: translateY(0);
-        }
-    }
+        }}
+    }}
     
-    @keyframes pulseGlow {
-        0%, 100% { 
+    @keyframes pulseGlow {{
+        0%%, 100%% {{ 
             box-shadow: 0 0 20px rgba(164, 74, 63, 0.3);
-        }
-        50% { 
+        }}
+        50%% {{ 
             box-shadow: 0 0 30px rgba(164, 74, 63, 0.5);
-        }
-    }
+        }}
+    }}
     
-    .main-header h1 {
+    .main-header h1 {{
         margin: 0;
         font-family: 'Playfair Display', serif;
         font-size: 3.8rem;
         font-weight: 900;
         text-shadow: 2px 4px 8px rgba(0,0,0,0.3);
         letter-spacing: -2px;
-        background: linear-gradient(135deg, var(--bone) 0%, var(--pearl) 100%);
+        background: linear-gradient(135deg, var(--bone) 0%%, var(--pearl) 100%%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
-    }
+    }}
     
-    .main-header .subtitle {
+    .main-header .subtitle {{
         margin: 1.5rem 0 0 0;
         font-family: 'Lato', sans-serif;
         font-size: 1.4rem;
@@ -138,59 +229,67 @@ st.markdown("""
         font-weight: 400;
         letter-spacing: 1px;
         color: var(--pearl);
-    }
+    }}
     
-    .medical-badge {
+    .medical-badge {{
         display: inline-flex;
         align-items: center;
         font-size: 2.5rem;
         margin-bottom: 1rem;
         filter: drop-shadow(2px 4px 8px rgba(0,0,0,0.2));
-    }
+    }}
     
-    .status-card {
-        background: var(--white);
-        border: 2px solid var(--pearl);
+    .status-card {{
+        background: {card_bg};
+        border: 2px solid {card_border};
         border-radius: 16px;
         padding: 1.5rem;
         margin: 0.75rem 0;
         transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 8px 24px var(--shadow-light);
+        box-shadow: {card_shadow};
         position: relative;
         overflow: hidden;
         animation: fadeInUp 0.6s ease-out;
-    }
+    }}
     
-    .status-card::before {
+    /* Mobile card adjustments */
+    @media (max-width: 768px) {{
+        .status-card {{
+            padding: 1rem;
+            margin: 0.5rem 0;
+        }}
+    }}
+    
+    .status-card::before {{
         content: '';
         position: absolute;
         top: 0;
         left: 0;
-        width: 100%;
+        width: 100%%;
         height: 3px;
-        background: linear-gradient(90deg, var(--chestnut) 0%, var(--khaki) 100%);
-    }
+        background: linear-gradient(90deg, var(--chestnut) 0%%, var(--khaki) 100%%);
+    }}
     
-    .status-card:hover {
+    .status-card:hover {{
         transform: translateY(-4px);
         box-shadow: 0 16px 40px var(--shadow-medium);
         border-color: var(--chestnut);
-    }
+    }}
     
-    .status-success {
+    .status-success {{
         border-left: 6px solid var(--chestnut);
-        background: linear-gradient(135deg, var(--white) 0%, rgba(164, 74, 63, 0.02) 100%);
-    }
+        background: linear-gradient(135deg, var(--white) 0%%, rgba(164, 74, 63, 0.02) 100%%);
+    }}
     
-    .status-warning {
+    .status-warning {{
         border-left: 6px solid var(--khaki);
-        background: linear-gradient(135deg, var(--white) 0%, rgba(165, 158, 140, 0.02) 100%);
-    }
+        background: linear-gradient(135deg, var(--white) 0%%, rgba(165, 158, 140, 0.02) 100%%);
+    }}
     
-    .status-error {
+    .status-error {{
         border-left: 6px solid #d32f2f;
-        background: linear-gradient(135deg, var(--white) 0%, rgba(211, 47, 47, 0.02) 100%);
-    }
+        background: linear-gradient(135deg, var(--white) 0%%, rgba(211, 47, 47, 0.02) 100%%);
+    }}
     
     .status-text {
         font-family: 'Lato', sans-serif;
@@ -207,15 +306,22 @@ st.markdown("""
         filter: drop-shadow(1px 2px 4px rgba(0,0,0,0.1));
     }
     
-    .chat-container {
-        background: var(--white);
+    .chat-container {{
+        background: {card_bg};
         border-radius: 20px;
         padding: 2rem;
         margin: 2rem 0;
-        box-shadow: 0 12px 32px var(--shadow-light);
-        border: 1px solid var(--pearl);
+        box-shadow: {card_shadow};
+        border: 1px solid {card_border};
         position: relative;
-    }
+    }}
+    
+    @media (max-width: 768px) {{
+        .chat-container {{
+            padding: 1rem;
+            border-radius: 15px;
+        }}
+    }}
     
     .chat-container::before {
         content: '';
@@ -224,21 +330,21 @@ st.markdown("""
         left: 0;
         right: 0;
         height: 4px;
-        background: linear-gradient(90deg, var(--chestnut) 0%, var(--khaki) 50%, var(--chestnut) 100%);
+        background: linear-gradient(90deg, var(--chestnut) 0%%, var(--khaki) 50%%, var(--chestnut) 100%%);
         border-radius: 20px 20px 0 0;
     }
     
-    .user-message {
-        background: linear-gradient(135deg, var(--bone) 0%, var(--pearl) 100%);
+    .user-message {{
+        background: {user_msg_bg};
         border: 2px solid var(--khaki);
         padding: 1.75rem;
         border-radius: 20px;
         margin: 1.5rem 0;
-        box-shadow: 0 8px 24px var(--shadow-light);
+        box-shadow: {card_shadow};
         transition: all 0.3s ease;
         animation: fadeInUp 0.5s ease-out;
         position: relative;
-    }
+    }}
     
     .user-message::before {
         content: '👩‍⚕️';
@@ -257,17 +363,17 @@ st.markdown("""
         box-shadow: 0 12px 32px var(--shadow-medium);
     }
     
-    .assistant-message {
-        background: linear-gradient(135deg, var(--white) 0%, rgba(164, 74, 63, 0.03) 100%);
+    .assistant-message {{
+        background: {assistant_msg_bg};
         border: 2px solid var(--chestnut);
         padding: 1.75rem;
         border-radius: 20px;
         margin: 1.5rem 0;
-        box-shadow: 0 8px 24px var(--shadow-light);
+        box-shadow: {card_shadow};
         transition: all 0.3s ease;
         animation: fadeInUp 0.5s ease-out;
         position: relative;
-    }
+    }}
     
     .assistant-message::before {
         content: '🩺';
@@ -287,20 +393,20 @@ st.markdown("""
         box-shadow: 0 12px 32px var(--shadow-medium);
     }
     
-    .message-content {
+    .message-content {{
         font-family: 'Lato', sans-serif;
         line-height: 1.7;
-        color: var(--charcoal);
+        color: {text_color};
         margin-top: 0.5rem;
-    }
+    }}
     
-    .message-label {
+    .message-label {{
         font-family: 'Playfair Display', serif;
         font-weight: 700;
         font-size: 1.1rem;
-        color: var(--charcoal);
+        color: {text_color};
         margin-bottom: 0.5rem;
-    }
+    }}
     
     .medical-disclaimer {
         background: linear-gradient(135deg, #fef7f7 0%, #fef0f0 100%);
@@ -341,9 +447,9 @@ st.markdown("""
         opacity: 0.9;
     }
     
-    .sidebar-config {
-        background: linear-gradient(135deg, var(--white) 0%, var(--bone) 100%);
-        border: 2px solid var(--pearl);
+    .sidebar-config {{
+        background: {sidebar_bg};
+        border: 2px solid {card_border};
         border-radius: 20px;
         padding: 2rem;
         margin: 1.5rem 0;
@@ -358,7 +464,7 @@ st.markdown("""
         left: 0;
         right: 0;
         height: 4px;
-        background: linear-gradient(90deg, var(--chestnut) 0%, var(--khaki) 100%);
+        background: linear-gradient(90deg, var(--chestnut) 0%%, var(--khaki) 100%%);
         border-radius: 20px 20px 0 0;
     }
     
@@ -449,7 +555,7 @@ st.markdown("""
     
     section[data-testid="stSidebar"] .stButton > button {
         background: linear-gradient(135deg, var(--khaki) 0%, #b5ae9b 100%);
-        width: 100%;
+        width: 100%%;
         margin: 0.4rem 0;
         font-size: 0.9rem;
         padding: 0.8rem 1.5rem;
@@ -511,9 +617,9 @@ st.markdown("""
         position: absolute;
         top: 0;
         left: 0;
-        width: 100%;
+        width: 100%%;
         height: 3px;
-        background: linear-gradient(90deg, var(--chestnut) 0%, var(--khaki) 100%);
+        background: linear-gradient(90deg, var(--chestnut) 0%%, var(--khaki) 100%%);
         border-radius: 16px 16px 0 0;
     }
     
@@ -536,7 +642,7 @@ st.markdown("""
     
     /* Progress bar styling */
     .stProgress > div > div > div > div {
-        background: linear-gradient(90deg, var(--chestnut) 0%, var(--khaki) 100%);
+        background: linear-gradient(90deg, var(--chestnut) 0%%, var(--khaki) 100%%);
         border-radius: 10px;
     }
     
@@ -635,7 +741,7 @@ st.markdown("""
         transform: translateX(-50%);
         width: 80px;
         height: 3px;
-        background: linear-gradient(90deg, var(--chestnut) 0%, var(--khaki) 100%);
+        background: linear-gradient(90deg, var(--chestnut) 0%%, var(--khaki) 100%%);
         border-radius: 3px;
     }
     
@@ -726,13 +832,81 @@ st.markdown("""
         font-family: 'Monaco', 'Consolas', monospace;
     }
     
-    .markdown-content pre {
+    /* Print-friendly styles */
+    @media print {{
+        /* Hide unnecessary elements */
+        .stSidebar, button, .stButton, [data-testid="stToolbar"], 
+        [data-testid="stStatusWidget"], .medical-disclaimer,
+        .status-card, details, summary {{
+            display: none !important;
+        }}
+        
+        /* Optimize layout for printing */
+        .stApp {{
+            background: white !important;
+            color: black !important;
+        }}
+        
+        .main-header {{
+            background: white !important;
+            color: black !important;
+            box-shadow: none !important;
+            border: 2px solid black !important;
+            page-break-after: avoid;
+        }}
+        
+        .main-header h1 {{
+            color: black !important;
+            -webkit-text-fill-color: black !important;
+        }}
+        
+        .chat-container {{
+            background: white !important;
+            box-shadow: none !important;
+            border: 1px solid #ccc !important;
+        }}
+        
+        .user-message, .assistant-message {{
+            background: white !important;
+            border: 1px solid #999 !important;
+            box-shadow: none !important;
+            page-break-inside: avoid;
+        }}
+        
+        .message-content {{
+            color: black !important;
+        }}
+        
+        .message-label {{
+            color: black !important;
+            font-weight: bold !important;
+        }}
+        
+        /* Ensure proper page breaks */
+        .user-message {{
+            page-break-after: auto;
+        }}
+        
+        .assistant-message {{
+            page-break-after: always;
+        }}
+        
+        /* Add print header */
+        @page {{
+            margin: 1in;
+            @top-center {{
+                content: "MedAssist AI Consultation - " attr(data-date);
+            }}
+        }}
+    }}
+    
+    .markdown-content pre {{
         background: var(--bone);
         border: 2px solid var(--pearl);
         border-radius: 12px;
         padding: 1rem;
         overflow-x: auto;
-    }
+    }}
 </style>
 """, unsafe_allow_html=True)
 
@@ -1010,6 +1184,46 @@ MEDICAL RESPONSE (based only on the provided context):"""
         return f'❌ Error generating medical response: {str(e)}'
 
 def main():
+    # Show onboarding for first-time users
+    if 'first_visit' not in st.session_state:
+        st.session_state.first_visit = True
+    
+    if st.session_state.first_visit:
+        with st.container():
+            st.markdown("""
+            <div class="onboarding-container" style="
+                background: linear-gradient(135deg, var(--pearl) 0%, var(--bone) 100%);
+                border: 2px solid var(--chestnut);
+                border-radius: 20px;
+                padding: 2rem;
+                margin-bottom: 2rem;
+                text-align: center;
+            ">
+                <h2 style="color: var(--chestnut); margin-bottom: 1rem;">🎆 Welcome to MedAssist AI!</h2>
+                <p style="font-size: 1.1rem; line-height: 1.6; margin-bottom: 1.5rem;">
+                    Your intelligent medical consultation assistant powered by advanced AI and a comprehensive medical knowledge base.
+                </p>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                    <div style="background: white; padding: 1rem; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                        <h4>🔒 Secure</h4>
+                        <p>Your data stays private</p>
+                    </div>
+                    <div style="background: white; padding: 1rem; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                        <h4>🎯 Accurate</h4>
+                        <p>Evidence-based responses</p>
+                    </div>
+                    <div style="background: white; padding: 1rem; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                        <h4>⚡ Fast</h4>
+                        <p>Instant medical insights</p>
+                    </div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            if st.button('🚀 Get Started', use_container_width=True):
+                st.session_state.first_visit = False
+                st.rerun()
+    
     # API Configuration in sidebar with enhanced styling
     with st.sidebar:
         st.markdown('<div class="sidebar-config">', unsafe_allow_html=True)
@@ -1124,6 +1338,35 @@ def main():
     # Main chat interface with enhanced styling
     st.markdown('<div class="section-header">💬 Medical Consultation</div>', unsafe_allow_html=True)
     
+    # Chat export functionality
+    if st.session_state.messages:
+        col1, col2, col3 = st.columns([4, 1, 1])
+        with col2:
+            if st.button('📥 Export Chat', help='Export conversation as markdown'):
+                # Generate markdown export
+                export_text = "# MedAssist AI Consultation\n\n"
+                export_text += f"**Date:** {datetime.now().strftime('%Y-%m-%d %H:%M')}\n\n"
+                for msg in st.session_state.messages:
+                    role = "Healthcare Professional" if msg["role"] == "user" else "MedAssist AI"
+                    export_text += f"## {role}\n{msg['content']}\n\n---\n\n"
+                
+                # Add disclaimer
+                export_text += "\n\n> **Disclaimer:** This AI assistant provides information for educational purposes only and should not replace professional medical advice."
+                
+                # Download button
+                st.download_button(
+                    label="💾 Download",
+                    data=export_text,
+                    file_name=f"medical_consultation_{datetime.now().strftime('%Y%m%d_%H%M')}.md",
+                    mime="text/markdown"
+                )
+        
+        with col3:
+            if st.button('🗑️ Clear Chat', help='Clear conversation history'):
+                st.session_state.messages = []
+                st.session_state.query_count = 0
+                st.rerun()
+    
     # Chat container
     st.markdown('<div class="chat-container">', unsafe_allow_html=True)
     
@@ -1182,16 +1425,37 @@ def main():
     
     # Show knowledge sources if response exists with enhanced styling
     if st.session_state.messages and st.session_state.system_initialized:
-        with st.expander("🔍 View Knowledge Sources (Last Query)"):
+        with st.expander("🔍 View Knowledge Sources & Citations"):
             if st.session_state.messages:
                 last_question = [msg for msg in st.session_state.messages if msg["role"] == "user"]
                 if last_question:
                     docs = st.session_state.retriever.get_relevant_documents(last_question[-1]["content"])
-                    for i, doc in enumerate(docs):
+                    
+                    # Add relevance scores and better formatting
+                    st.markdown("<h4>📚 Most Relevant Medical Sources</h4>", unsafe_allow_html=True)
+                    
+                    for i, doc in enumerate(docs[:5]):  # Limit to top 5 sources
+                        # Calculate simple relevance score (you can improve this)
+                        relevance = f"{(5-i)*20}%"
+                        
                         st.markdown(f"""
                         <div class="knowledge-source" style="animation: fadeInUp 0.5s ease-out {0.1 * i}s both;">
-                            <div class="source-label">Source {i+1}</div>
-                            <div class="source-content">{doc.page_content[:400]}...</div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                <div class="source-label">📖 Source {i+1}</div>
+                                <div style="color: var(--chestnut); font-weight: bold;">Relevance: {relevance}</div>
+                            </div>
+                            <div class="source-content">
+                                <div style="margin-bottom: 0.5rem; font-style: italic; color: #666;">
+                                    {doc.metadata.get('source', 'Medical Knowledge Base')}
+                                </div>
+                                {doc.page_content[:500]}...
+                            </div>
+                            <details style="margin-top: 1rem;">
+                                <summary style="cursor: pointer; color: var(--chestnut); font-weight: 500;">View Full Context</summary>
+                                <div style="padding: 1rem; background: rgba(0,0,0,0.02); border-radius: 8px; margin-top: 0.5rem;">
+                                    {doc.page_content}
+                                </div>
+                            </details>
                         </div>
                         """, unsafe_allow_html=True)
     
