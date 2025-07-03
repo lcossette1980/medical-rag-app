@@ -61,40 +61,62 @@ else:
     assistant_msg_bg = 'linear-gradient(135deg, var(--white) 0%, rgba(164, 74, 63, 0.03) 100%)'
     sidebar_bg = 'linear-gradient(135deg, var(--white) 0%, var(--bone) 100%)'
 
-# Create the CSS dynamically
-css_content = f"""
-    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Lato:wght@300;400;500;600&display=swap');
-    
-    :root {{
-        --charcoal: #2A2A2A;
-        --chestnut: #A44A3F;
-        --khaki: #A59E8C;
-        --pearl: #D7CEB2;
-        --bone: #F5F2EA;
-        --white: #FFFFFF;
-        --shadow-light: rgba(42, 42, 42, 0.08);
-        --shadow-medium: rgba(42, 42, 42, 0.15);
-        --shadow-heavy: rgba(42, 42, 42, 0.25);
-        
-        --dark-bg: #1a1a1a;
-        --dark-surface: #2d2d2d;
-        --dark-text: #e0e0e0;
-        --dark-border: #3d3d3d;
-        --dark-shadow: rgba(0, 0, 0, 0.3);
-    }}
-    
-    * {{
-        font-family: 'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    }}
-    
+# Enhanced CSS with dynamic theme support
+# Build CSS with theme variables
+theme_css = f"""
     .stApp {{
         background: {bg_gradient};
         min-height: 100vh;
         color: {text_color};
     }}
+    
+    .main-header {{
+        background: {header_bg};
+        box-shadow: {header_shadow};
+        border: 1px solid {header_border};
+    }}
+    
+    .status-card {{
+        background: {card_bg};
+        border: 2px solid {card_border};
+        box-shadow: {card_shadow};
+    }}
+    
+    .chat-container {{
+        background: {card_bg};
+        box-shadow: {card_shadow};
+        border: 1px solid {card_border};
+    }}
+    
+    .user-message {{
+        background: {user_msg_bg};
+        box-shadow: {card_shadow};
+    }}
+    
+    .assistant-message {{
+        background: {assistant_msg_bg};
+        box-shadow: {card_shadow};
+    }}
+    
+    .message-content {{
+        color: {text_color};
+    }}
+    
+    .message-label {{
+        color: {text_color};
+    }}
+    
+    .sidebar-config {{
+        background: {sidebar_bg};
+        border: 2px solid {card_border};
+    }}
 """
 
-st.markdown(f"<style>{css_content}</style>
+st.markdown(f"<style>{theme_css}</style>", unsafe_allow_html=True)
+
+# Static CSS without theme variables
+st.markdown("""
+<style>
     @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Lato:wght@300;400;500;600&display=swap');
     
     :root {{
@@ -108,7 +130,6 @@ st.markdown(f"<style>{css_content}</style>
         --shadow-medium: rgba(42, 42, 42, 0.15);
         --shadow-heavy: rgba(42, 42, 42, 0.25);
         
-        /* Dark mode variables */
         --dark-bg: #1a1a1a;
         --dark-surface: #2d2d2d;
         --dark-text: #e0e0e0;
